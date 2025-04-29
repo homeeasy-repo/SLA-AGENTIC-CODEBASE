@@ -1,43 +1,33 @@
-# agent.py (start building this file)
-
+import logging
+import os
+from tenacity import retry, stop_after_attempt, wait_fixed
 from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.memory import ConversationBufferMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
-import os
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 
 GENAI_MODEL = os.getenv("GENAI_MODEL")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+# Utility function for message formatting
+def format_gemini_messages(system_message: str, user_input: str) -> list:
+    """Format input as a list of messages for Gemini API."""
+    return [
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": user_input}
+    ]
+
 class QualificationAgent:
     """Agent that qualifies the client by extracting motivation, urgency, and pain points using Socratic questioning."""
 
     def __init__(self):
-        self.llm = ChatGoogleGenerativeAI(
-            model=GENAI_MODEL,
-            google_api_key=GEMINI_API_KEY,
-            temperature=0.4,
-            convert_system_message_to_human=True
-        )
-        self.memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True,
-            output_key="output"
-        )
-        self.setup_agent()
-
-    def setup_agent(self):
-        """Initialize the Qualification Agent with the correct tool and system instructions."""
-        tools = [
-            Tool(
-                name="QualificationAnalyzer",
-                func=self.analyze_qualification,
-                description="Extracts client's motivation, urgency, and pain points by using Socratic questioning techniques."
-            )
-        ]
-
-        system_message = """
+        self.system_message = """
             You are a HomeEasy Leasing Consultant specializing in client qualification.
 
             Your mission is to deeply understand why a client wants to move by asking strategic Socratic questions. 
@@ -64,34 +54,7 @@ class QualificationAgent:
             Prepare this profile cleanly for the next sales phase.
 
             Always remember: "Extract statements; don’t make them."
-            """
-
-        self.agent = initialize_agent(
-            tools=tools,
-            llm=self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True,
-            memory=self.memory,
-            system_message=system_message
-        )
-
-    def analyze_qualification(self, query: str) -> str:
-        """Simple passthrough for now since LangChain needs a function."""
-        return query
-
-    def process_query(self, client_message: str) -> str:
-        """Process client input with system instructions directly using Gemini."""
-        try:
-            prompt = f"{self.system_message}\n\nClient Message: {client_message}\n\nBased on the client message above, analyze and return the qualification profile in the required output format."
-            response = self.llm.invoke(prompt)
-            return response.content
-        except Exception as e:
-            return f"Error in QualificationAgent: {str(e)}"
-
-class ToneAgent:
-    """Agent that decides the correct tone to use based on client qualification profile."""
-
-    def __init__(self):
+        """
         self.llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
             google_api_key=GEMINI_API_KEY,
@@ -104,18 +67,52 @@ class ToneAgent:
             output_key="output"
         )
         self.setup_agent()
+        logger.info("QualificationAgent initialized")
 
     def setup_agent(self):
-        """Initialize the Tone Agent with the correct tool and system instructions."""
+        """Initialize the Qualification Agent with the correct tool and system instructions."""
         tools = [
             Tool(
-                name="ToneSelector",
-                func=self.select_tone,
-                description="Decides whether to use a Concierge or Urgency tone based on client qualification."
+                name="QualificationAnalyzer",
+                func=self.analyze_qualification,
+                description="Extracts client's motivation, urgency, and pain points by using Socratic questioning techniques."
             )
         ]
 
-        system_message = """
+        self.agent = initialize_agent(
+            tools=tools,
+            llm=self.llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            memory=self.memory
+        )
+
+    def analyze_qualification(self, query: str) -> str:
+        """Simple passthrough for now since LangChain needs a function."""
+        return query
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+    def process_query(self, client_message: str) -> str:
+        """Process client input with system instructions directly using Gemini."""
+        try:
+            if not client_message.strip():
+                logger.error("Client message is empty")
+                return "Error: Client message cannot be empty."
+
+            prompt = f"Client Message: {client_message}\n\nBased on the client message above, analyze and return the qualification profile in the required output format."
+            messages = format_gemini_messages(self.system_message, prompt)
+            logger.info("QualificationAgent processing: %s", client_message)
+            response = self.llm.invoke(messages)
+            return response.content
+        except Exception as e:
+            logger.error("Error in QualificationAgent: %s", str(e))
+            return f"Error in QualificationAgent: {str(e)}"
+
+class ToneAgent:
+    """Agent that decides the correct tone to use based on client qualification profile."""
+
+    def __init__(self):
+        self.system_message = """
             You are a HomeEasy Tone Calibration Advisor.
 
             Your mission is to choose the correct communication style for each client based on their qualification profile.
@@ -140,34 +137,7 @@ class ToneAgent:
             Prepare the proper psychological strategy to maximize conversion.
 
             Always remember: "Speak in the client's interest, but guide them firmly."
-            """
-
-        self.agent = initialize_agent(
-            tools=tools,
-            llm=self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True,
-            memory=self.memory,
-            system_message=system_message
-        )
-
-    def select_tone(self, qualification_summary: str) -> str:
-        """Simple passthrough for now since LangChain needs a function."""
-        return qualification_summary
-
-    def process_query(self, qualification_summary: str) -> str:
-        """Pass the qualification profile to the Tone Agent and get a tone strategy."""
-        try:
-            response = self.agent.invoke({"input": qualification_summary})
-            return response["output"]
-        except Exception as e:
-            return f"Error in ToneAgent: {str(e)}"
-
-
-class InventoryAgent:
-    """Agent that recommends properties based on client profile and urgency."""
-
-    def __init__(self):
+        """
         self.llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
             google_api_key=GEMINI_API_KEY,
@@ -180,18 +150,51 @@ class InventoryAgent:
             output_key="output"
         )
         self.setup_agent()
+        logger.info("ToneAgent initialized")
 
     def setup_agent(self):
-        """Initialize the Inventory Agent with the correct tool and system instructions."""
+        """Initialize the Tone Agent with the correct tool and system instructions."""
         tools = [
             Tool(
-                name="InventoryMatcher",
-                func=self.match_inventory,
-                description="Matches client's profile and needs to available inventory, prioritizing high-commission, quick-close options."
+                name="ToneSelector",
+                func=self.select_tone,
+                description="Decides whether to use a Concierge or Urgency tone based on client qualification."
             )
         ]
 
-        system_message = """
+        self.agent = initialize_agent(
+            tools=tools,
+            llm=self.llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            memory=self.memory
+        )
+
+    def select_tone(self, qualification_summary: str) -> str:
+        """Simple passthrough for now since LangChain needs a function."""
+        return qualification_summary
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+    def process_query(self, qualification_summary: str) -> str:
+        """Pass the qualification profile to the Tone Agent and get a tone strategy."""
+        try:
+            if not qualification_summary.strip():
+                logger.error("Qualification summary is empty")
+                return "Error: Qualification summary cannot be empty."
+
+            messages = format_gemini_messages(self.system_message, qualification_summary)
+            logger.info("ToneAgent processing: %s", qualification_summary)
+            response = self.llm.invoke(messages)
+            return response.content
+        except Exception as e:
+            logger.error("Error in ToneAgent: %s", str(e))
+            return f"Error in ToneAgent: {str(e)}"
+
+class InventoryAgent:
+    """Agent that recommends properties based on client profile and urgency."""
+
+    def __init__(self):
+        self.system_message = """
             You are a HomeEasy Inventory Matching Specialist.
 
             Your mission is to suggest the best rental options based on the client's motivation, urgency, budget, and preferences.
@@ -224,33 +227,6 @@ class InventoryAgent:
 
             Always remember: "Help the client make the fastest, safest, smartest choice."
         """
-
-        self.agent = initialize_agent(
-            tools=tools,
-            llm=self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True,
-            memory=self.memory,
-            system_message=system_message
-        )
-
-    def match_inventory(self, client_profile: str) -> str:
-        """Simple passthrough for now since LangChain needs a function."""
-        return client_profile
-
-    def process_query(self, client_profile: str) -> str:
-        """Pass the client profile to the Inventory Agent and get matched property recommendations."""
-        try:
-            response = self.agent.invoke({"input": client_profile})
-            return response["output"]
-        except Exception as e:
-            return f"Error in InventoryAgent: {str(e)}"
-
-
-class ActionPlanAgent:
-    """Agent that creates a structured action plan for both client and agent based on property matching and conversation."""
-
-    def __init__(self):
         self.llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
             google_api_key=GEMINI_API_KEY,
@@ -263,18 +239,51 @@ class ActionPlanAgent:
             output_key="output"
         )
         self.setup_agent()
+        logger.info("InventoryAgent initialized")
 
     def setup_agent(self):
-        """Initialize the Action Plan Agent with the correct tool and system instructions."""
+        """Initialize the Inventory Agent with the correct tool and system instructions."""
         tools = [
             Tool(
-                name="ActionPlanBuilder",
-                func=self.create_action_plan,
-                description="Creates a time-bound action plan assigning tasks to the agent and the client based on matched inventory and client motivation."
+                name="InventoryMatcher",
+                func=self.match_inventory,
+                description="Matches client's profile and needs to available inventory, prioritizing high-commission, quick-close options."
             )
         ]
 
-        system_message = """
+        self.agent = initialize_agent(
+            tools=tools,
+            llm=self.llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            memory=self.memory
+        )
+
+    def match_inventory(self, client_profile: str) -> str:
+        """Simple passthrough for now since LangChain needs a function."""
+        return client_profile
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+    def process_query(self, client_profile: str) -> str:
+        """Pass the client profile to the Inventory Agent and get matched property recommendations."""
+        try:
+            if not client_profile.strip():
+                logger.error("Client profile is empty")
+                return "Error: Client profile cannot be empty."
+
+            messages = format_gemini_messages(self.system_message, client_profile)
+            logger.info("InventoryAgent processing: %s", client_profile)
+            response = self.llm.invoke(messages)
+            return response.content
+        except Exception as e:
+            logger.error("Error in InventoryAgent: %s", str(e))
+            return f"Error in InventoryAgent: {str(e)}"
+
+class ActionPlanAgent:
+    """Agent that creates a structured action plan for both client and agent based on property matching and conversation."""
+
+    def __init__(self):
+        self.system_message = """
             You are a HomeEasy Action Plan Creator.
 
             Your mission is to generate a clear, specific, time-bound action plan after matching properties to the client.
@@ -306,33 +315,6 @@ class ActionPlanAgent:
 
             Always remember: "Time is the enemy — act quickly."
         """
-
-        self.agent = initialize_agent(
-            tools=tools,
-            llm=self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True,
-            memory=self.memory,
-            system_message=system_message
-        )
-
-    def create_action_plan(self, client_inventory_summary: str) -> str:
-        """Simple passthrough for now since LangChain needs a function."""
-        return client_inventory_summary
-
-    def process_query(self, client_inventory_summary: str) -> str:
-        """Pass the conversation and matched inventory summary to Action Plan Agent and get a structured action plan."""
-        try:
-            response = self.agent.invoke({"input": client_inventory_summary})
-            return response["output"]
-        except Exception as e:
-            return f"Error in ActionPlanAgent: {str(e)}"
-
-
-class ObjectionHandlerAgent:
-    """Agent that handles client objections using HomeEasy-approved fact-based, urgency-driven, and psychology-grounded techniques."""
-
-    def __init__(self):
         self.llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
             google_api_key=GEMINI_API_KEY,
@@ -345,18 +327,51 @@ class ObjectionHandlerAgent:
             output_key="output"
         )
         self.setup_agent()
+        logger.info("ActionPlanAgent initialized")
 
     def setup_agent(self):
-        """Initialize the Objection Handling Agent with the correct tool and system instructions."""
+        """Initialize the Action Plan Agent with the correct tool and system instructions."""
         tools = [
             Tool(
-                name="ObjectionResolver",
-                func=self.handle_objection,
-                description="Handles client objections like price concerns, hesitations, delays, by providing fact-based logical rebuttals."
+                name="ActionPlanBuilder",
+                func=self.create_action_plan,
+                description="Creates a time-bound action plan assigning tasks to the agent and the client based on matched inventory and client motivation."
             )
         ]
 
-        system_message = """
+        self.agent = initialize_agent(
+            tools=tools,
+            llm=self.llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            memory=self.memory
+        )
+
+    def create_action_plan(self, client_inventory_summary: str) -> str:
+        """Simple passthrough for now since LangChain needs a function."""
+        return client_inventory_summary
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+    def process_query(self, client_inventory_summary: str) -> str:
+        """Pass the conversation and matched inventory summary to Action Plan Agent and get a structured action plan."""
+        try:
+            if not client_inventory_summary.strip():
+                logger.error("Client inventory summary is empty")
+                return "Error: Client inventory summary cannot be empty."
+
+            messages = format_gemini_messages(self.system_message, client_inventory_summary)
+            logger.info("ActionPlanAgent processing: %s", client_inventory_summary)
+            response = self.llm.invoke(messages)
+            return response.content
+        except Exception as e:
+            logger.error("Error in ActionPlanAgent: %s", str(e))
+            return f"Error in ActionPlanAgent: {str(e)}"
+
+class ObjectionHandlerAgent:
+    """Agent that handles client objections using HomeEasy-approved fact-based, urgency-driven, and psychology-grounded techniques."""
+
+    def __init__(self):
+        self.system_message = """
             You are a HomeEasy Objection Handling Specialist.
 
             Your mission is to **overcome client objections** using logical reasoning, fact-based corrections, urgency creation, and emotional reassurance.
@@ -390,33 +405,6 @@ class ObjectionHandlerAgent:
 
             Always remember: "Frame facts as opportunities, not criticisms."
         """
-
-        self.agent = initialize_agent(
-            tools=tools,
-            llm=self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True,
-            memory=self.memory,
-            system_message=system_message
-        )
-
-    def handle_objection(self, objection_message: str) -> str:
-        """Simple passthrough for now since LangChain needs a function."""
-        return objection_message
-
-    def process_query(self, objection_message: str) -> str:
-        """Pass the objection message to the Objection Handler Agent and get a rebuttal + next step."""
-        try:
-            response = self.agent.invoke({"input": objection_message})
-            return response["output"]
-        except Exception as e:
-            return f"Error in ObjectionHandlerAgent: {str(e)}"
-
-
-class ApplicationCloserAgent:
-    """Agent that drives the client to complete the application process, explains next steps, and creates urgency."""
-
-    def __init__(self):
         self.llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
             google_api_key=GEMINI_API_KEY,
@@ -429,18 +417,51 @@ class ApplicationCloserAgent:
             output_key="output"
         )
         self.setup_agent()
+        logger.info("ObjectionHandlerAgent initialized")
 
     def setup_agent(self):
-        """Initialize the Application Closer Agent with the correct tool and system instructions."""
+        """Initialize the Objection Handling Agent with the correct tool and system instructions."""
         tools = [
             Tool(
-                name="ApplicationCloser",
-                func=self.close_application,
-                description="Pushes the client to complete the rental application after property match is done. Explains next steps clearly and frames application positively."
+                name="ObjectionResolver",
+                func=self.handle_objection,
+                description="Handles client objections like price concerns, hesitations, delays, by providing fact-based logical rebuttals."
             )
         ]
 
-        system_message = """
+        self.agent = initialize_agent(
+            tools=tools,
+            llm=self.llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            memory=self.memory
+        )
+
+    def handle_objection(self, objection_message: str) -> str:
+        """Simple passthrough for now since LangChain needs a function."""
+        return objection_message
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+    def process_query(self, objection_message: str) -> str:
+        """Pass the objection message to the Objection Handler Agent and get a rebuttal + next step."""
+        try:
+            if not objection_message.strip():
+                logger.error("Objection message is empty")
+                return "Error: Objection message cannot be empty."
+
+            messages = format_gemini_messages(self.system_message, objection_message)
+            logger.info("ObjectionHandlerAgent processing: %s", objection_message)
+            response = self.llm.invoke(messages)
+            return response.content
+        except Exception as e:
+            logger.error("Error in ObjectionHandlerAgent: %s", str(e))
+            return f"Error in ObjectionHandlerAgent: {str(e)}"
+
+class ApplicationCloserAgent:
+    """Agent that drives the client to complete the application process, explains next steps, and creates urgency."""
+
+    def __init__(self):
+        self.system_message = """
             You are a HomeEasy Application Closing Specialist.
 
             Your mission is to smoothly and professionally **move the client into the application phase** after matching properties.
@@ -473,32 +494,6 @@ class ApplicationCloserAgent:
 
             Always remember: "Frame the next step as a victory, not a burden."
         """
-
-        self.agent = initialize_agent(
-            tools=tools,
-            llm=self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True,
-            memory=self.memory,
-            system_message=system_message
-        )
-
-    def close_application(self, application_prompt: str) -> str:
-        """Simple passthrough for now since LangChain needs a function."""
-        return application_prompt
-
-    def process_query(self, application_prompt: str) -> str:
-        """Pass the final client + property context to Application Closer Agent and get application instructions."""
-        try:
-            response = self.agent.invoke({"input": application_prompt})
-            return response["output"]
-        except Exception as e:
-            return f"Error in ApplicationCloserAgent: {str(e)}"
-
-class PostApplicationAgent:
-    """Agent that manages post-application activities: payment confirmation, lease signing, move-in coordination, and ongoing client communication."""
-
-    def __init__(self):
         self.llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
             google_api_key=GEMINI_API_KEY,
@@ -511,18 +506,51 @@ class PostApplicationAgent:
             output_key="output"
         )
         self.setup_agent()
+        logger.info("ApplicationCloserAgent initialized")
 
     def setup_agent(self):
-        """Initialize the Post-Application Follow-Up Agent with the correct tool and system instructions."""
+        """Initialize the Application Closer Agent with the correct tool and system instructions."""
         tools = [
             Tool(
-                name="PostApplicationFollowUp",
-                func=self.follow_up_application,
-                description="Manages post-application follow-ups: payment verification, lease generation, move-in scheduling, and maintaining client communication until move-in is complete."
+                name="ApplicationCloser",
+                func=self.close_application,
+                description="Pushes the client to complete the rental application after property match is done. Explains next steps clearly and frames application positively."
             )
         ]
 
-        system_message = """
+        self.agent = initialize_agent(
+            tools=tools,
+            llm=self.llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            memory=self.memory
+        )
+
+    def close_application(self, application_prompt: str) -> str:
+        """Simple passthrough for now since LangChain needs a function."""
+        return application_prompt
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+    def process_query(self, application_prompt: str) -> str:
+        """Pass the final client + property context to Application Closer Agent and get application instructions."""
+        try:
+            if not application_prompt.strip():
+                logger.error("Application prompt is empty")
+                return "Error: Application prompt cannot be empty."
+
+            messages = format_gemini_messages(self.system_message, application_prompt)
+            logger.info("ApplicationCloserAgent processing: %s", application_prompt)
+            response = self.llm.invoke(messages)
+            return response.content
+        except Exception as e:
+            logger.error("Error in ApplicationCloserAgent: %s", str(e))
+            return f"Error in ApplicationCloserAgent: {str(e)}"
+
+class PostApplicationAgent:
+    """Agent that manages post-application activities: payment confirmation, lease signing, move-in coordination, and ongoing client communication."""
+
+    def __init__(self):
+        self.system_message = """
             You are a HomeEasy Post-Application Follow-Up Specialist.
 
             Your mission is to **escort the client from application submission all the way to successful move-in**.
@@ -554,32 +582,6 @@ class PostApplicationAgent:
 
             Always remember: "The sale is not complete until the keys are in the client's hand."
         """
-
-        self.agent = initialize_agent(
-            tools=tools,
-            llm=self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True,
-            memory=self.memory,
-            system_message=system_message
-        )
-
-    def follow_up_application(self, post_application_context: str) -> str:
-        """Simple passthrough for now since LangChain needs a function."""
-        return post_application_context
-
-    def process_query(self, post_application_context: str) -> str:
-        """Pass the application context to Post-Application Agent and get next follow-up actions."""
-        try:
-            response = self.agent.invoke({"input": post_application_context})
-            return response["output"]
-        except Exception as e:
-            return f"Error in PostApplicationAgent: {str(e)}"
-
-class SMSFormatterAgent:
-    """Agent that formats all outgoing messages into short, natural, human-like SMS replies, optimized for client communication."""
-
-    def __init__(self):
         self.llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
             google_api_key=GEMINI_API_KEY,
@@ -592,18 +594,51 @@ class SMSFormatterAgent:
             output_key="output"
         )
         self.setup_agent()
+        logger.info("PostApplicationAgent initialized")
 
     def setup_agent(self):
-        """Initialize the SMS Formatter Agent with the correct tool and system instructions."""
+        """Initialize the Post-Application Follow-Up Agent with the correct tool and system instructions."""
         tools = [
             Tool(
-                name="SMSFormatter",
-                func=self.format_sms,
-                description="Formats structured agent responses into short, natural, human-like SMS messages under 300 characters if possible."
+                name="PostApplicationFollowUp",
+                func=self.follow_up_application,
+                description="Manages post-application follow-ups: payment verification, lease generation, move-in scheduling, and maintaining client communication until move-in is complete."
             )
         ]
 
-        system_message = """
+        self.agent = initialize_agent(
+            tools=tools,
+            llm=self.llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=True,
+            memory=self.memory
+        )
+
+    def follow_up_application(self, post_application_context: str) -> str:
+        """Simple passthrough for now since LangChain needs a function."""
+        return post_application_context
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+    def process_query(self, post_application_context: str) -> str:
+        """Pass the application context to Post-Application Agent and get next follow-up actions."""
+        try:
+            if not post_application_context.strip():
+                logger.error("Post-application context is empty")
+                return "Error: Post-application context cannot be empty."
+
+            messages = format_gemini_messages(self.system_message, post_application_context)
+            logger.info("PostApplicationAgent processing: %s", post_application_context)
+            response = self.llm.invoke(messages)
+            return response.content
+        except Exception as e:
+            logger.error("Error in PostApplicationAgent: %s", str(e))
+            return f"Error in PostApplicationAgent: {str(e)}"
+
+class SMSFormatterAgent:
+    """Agent that formats all outgoing messages into short, natural, human-like SMS replies, optimized for client communication."""
+
+    def __init__(self):
+        self.system_message = """
             You are a HomeEasy SMS Formatting Specialist.
 
             Your mission is to **convert structured agent responses** into **short, clear, human-sounding SMS drafts**.
@@ -633,32 +668,118 @@ class SMSFormatterAgent:
 
             Always remember: "SMS = Short, Meaningful, Swift."
         """
+        self.llm = ChatGoogleGenerativeAI(
+            model=GENAI_MODEL,
+            google_api_key=GEMINI_API_KEY,
+            temperature=0.4,
+            convert_system_message_to_human=True
+        )
+        self.memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True,
+            output_key="output"
+        )
+        self.setup_agent()
+        logger.info("SMSFormatterAgent initialized")
+
+    def setup_agent(self):
+        """Initialize the SMS Formatter Agent with the correct tool and system instructions."""
+        tools = [
+            Tool(
+                name="SMSFormatter",
+                func=self.format_sms,
+                description="Formats structured agent responses into short, natural, human-like SMS messages under 300 characters if possible."
+            )
+        ]
 
         self.agent = initialize_agent(
             tools=tools,
             llm=self.llm,
             agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             verbose=True,
-            memory=self.memory,
-            system_message=system_message
+            memory=self.memory
         )
 
     def format_sms(self, full_response: str) -> str:
         """Simple passthrough for now since LangChain needs a function."""
         return full_response
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
     def process_query(self, full_response: str) -> str:
         """Pass the full response to the SMS Formatter Agent and get a short SMS-ready text."""
         try:
-            response = self.agent.invoke({"input": full_response})
-            return response["output"]
+            if not full_response.strip():
+                logger.error("Full response is empty")
+                return "Error: Full response cannot be empty."
+
+            messages = format_gemini_messages(self.system_message, full_response)
+            logger.info("SMSFormatterAgent processing: %s", full_response)
+            response = self.llm.invoke(messages)
+            return response.content
         except Exception as e:
+            logger.error("Error in SMSFormatterAgent: %s", str(e))
             return f"Error in SMSFormatterAgent: {str(e)}"
 
 class MainAgent:
     """Main coordinating agent that orchestrates all specialized agents and generates the final SMS-ready response."""
 
     def __init__(self):
+        self.system_message = """
+            You are HomeEasy's Main Sales Coordinator, a professional, friendly leasing consultant who communicates like a human.
+
+            ---
+
+            **Core Behavior**:
+            - Begin every interaction with a polite, warm tone.
+            - If the client is confused (e.g., "Who are you?"), respond: "Hey! I'm with HomeEasy, here to help you find your next apartment!"
+            - Protect client privacy; never share sensitive details.
+            - Avoid AI-like responses; act as a trusted, real person.
+
+            ---
+
+            **Agent Calling Rules**:
+
+            1. **Introduction**:
+               - For new or vague messages (e.g., "Who are you?" or "Looking for an apartment"), craft a friendly greeting and pass to **SMSFormatterAgent**.
+
+            2. **Qualification**:
+               - If client needs (budget, location, size, move-in date) are unclear, call **QualificationAgent** to ask targeted questions (e.g., "What's your budget and ideal location?").
+
+            3. **Tone Selection**:
+               - After qualification, call **ToneAgent** to set "Concierge" (high-qualified) or "Urgency" (lower-qualified) tone.
+
+            4. **Inventory Matching**:
+               - If client needs and inventory are available, call **InventoryAgent** to suggest 3–5 properties matching budget, location, and preferences.
+
+            5. **Action Plan**:
+               - Post-inventory, call **ActionPlanAgent** to outline urgent, actionable next steps for agent and client.
+
+            6. **Objection Handling**:
+               - For hesitations (e.g., "Too expensive"), call **ObjectionHandlerAgent** to provide empathetic, logical rebuttals.
+
+            7. **Application Push**:
+               - If a property is chosen, call **ApplicationCloserAgent** to encourage application submission.
+
+            8. **Post-Application Follow-Up**:
+               - After application, call **PostApplicationAgent** to manage lease signing and move-in.
+
+            ---
+
+            **Special Instructions**:
+            - Always route the final response through **SMSFormatterAgent** for a polite, human-like SMS (aim for <300 characters).
+            - For vague or incomplete inputs, ask clarifying questions (e.g., "What size apartment and budget are you looking for?").
+            - If no inventory matches, inform the client and ask for more details or flexibility.
+
+            ---
+
+            **Goal**:
+            Engage clients warmly, clarify their rental needs, and guide them toward a lease with concise, SMS-formatted responses.
+
+            ---
+
+            **Key Reminder**:
+            Proactively guide the conversation, always use **SMSFormatterAgent**, and embody a trusted HomeEasy consultant.
+        """
         self.llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
             google_api_key=GEMINI_API_KEY,
@@ -671,6 +792,7 @@ class MainAgent:
         )
         self.setup_agents()
         self.setup_coordinator()
+        logger.info("MainAgent initialized")
 
     def setup_agents(self):
         """Initialize all specialized agents."""
@@ -698,10 +820,7 @@ class MainAgent:
             ),
             Tool(
                 name="InventoryAgent",
-                func=lambda input: self.inventory_agent.process_query(
-                    input.get("client_profile", ""), 
-                    input.get("inventory_list", "")
-                ),
+                func=self.inventory_agent.process_query,
                 description="Matches properties to client profile and recommends inventory."
             ),
             Tool(
@@ -731,86 +850,16 @@ class MainAgent:
             ),
         ]
 
-        system_message = """
-            You are HomeEasy's Main Sales Coordinator Assistant.
-
-            You act as a **real human leasing consultant** — friendly, respectful, professional.
-
-            ---
-            GENERAL BEHAVIOR:
-
-            - Always begin the conversation politely.
-            - If the client expresses confusion (e.g., "Who are you?" / "Who gave you my info?"):
-            - Respond politely: "We received your information through one of the properties we work with. We're here to help you find your next apartment."
-            - Always respect client privacy — never reveal detailed private information.
-            - Always sound confident, warm, and helpful.
-            - Never behave like an AI — you are a real person helping with rentals.
-            ---
-
-            AGENT CALLING RULES:
-
-            1. **Start with Introduction**:
-            - If conversation is early or confused, simply craft an introduction and format it via SMSFormatterAgent.
-
-            2. **Qualification**:
-            - If you have no clear details about client's move-in motivation, call **QualificationAgent** to understand needs.
-
-            3. **Tone Decision**:
-            - After qualifying, call **ToneAgent** to set whether you will use "Concierge" or "Urgency" tone in future replies.
-
-            4. **Inventory Matching**:
-            - If inventory is available, call **InventoryAgent** with the client profile and available units.
-            - Recommend 3–5 best units politely.
-
-            5. **Action Plan**:
-            - After matching units, call **ActionPlanAgent** to structure next steps with clear deadlines.
-
-            6. **Objection Handling**:
-            - If client raises concerns (e.g., "Price too high", "Need to think"), call **ObjectionHandlerAgent** to craft respectful rebuttals.
-
-            7. **Application Push**:
-            - If client selects a property, call **ApplicationCloserAgent** to push application respectfully.
-
-            8. **Post-Application Followup**:
-            - After application submission, call **PostApplicationAgent** to manage move-in coordination.
-
-            ---
-            SPECIAL INSTRUCTIONS:
-
-            - At the END of **any conversation**, ALWAYS pass your response to **SMSFormatterAgent** to format it properly as a short SMS reply.
-
-            - When passing to SMSFormatterAgent, ask it to:
-            - Respectfully maintain politeness.
-            - Summarize clearly under 300 characters if possible.
-            - Ensure message sounds human and not scripted.
-
-            ---
-            FINAL GOAL:
-
-            Your mission is to:
-            - Engage the client politely
-            - Understand their rental needs
-            - Guide them step-by-step toward signing an apartment lease
-            - Always sound human, smart, and respectful
-            - Always return only one short final SMS-ready response.
-
-            ---
-
-            Remember:
-            **Always guide, never just answer. Always format, never skip SMSFormatterAgent.**
-
-            Act like a real HomeEasy consultant at every moment.
-        """
-
         self.agent = initialize_agent(
             tools=tools,
             llm=self.llm,
             agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             verbose=True,
-            memory=self.memory,
-            system_message=system_message
+            memory=self.memory
         )
+        logger.info("MainAgent coordinator initialized with tools: %s", [tool.name for tool in tools])
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
     def process_query(self, full_context: dict) -> str:
         """
         Process incoming conversation + inventory with proper routing.
@@ -821,7 +870,10 @@ class MainAgent:
         }
         """
         try:
-            # Merge chat_history + inventory into a single string
+            if not full_context.get("chat_history"):
+                logger.error("Chat history is missing")
+                return "Error: Chat history is required."
+
             combined_input = f"""
 Client Conversation History:
 {full_context.get('chat_history', '')}
@@ -829,21 +881,17 @@ Client Conversation History:
 Available Inventory:
 {full_context.get('inventory_list', '')}
 """
-
-            # Pass the combined input to the agent
-            structured_response = self.agent.invoke({"input": combined_input})
+            logger.info("MainAgent processing: %s", combined_input)
+            messages = format_gemini_messages(self.system_message, combined_input)
+            structured_response = self.agent.invoke(messages)
             structured_message = structured_response["output"]
-
-            # Then SMSFormatterAgent trims it into clean SMS
             sms_final = self.sms_formatter_agent.process_query(structured_message)
-
             return sms_final.strip()
         except Exception as e:
+            logger.error("Error in MainAgent: %s", str(e))
             return f"Error in MainAgent: {str(e)}"
-        
 
-#### AGENT CALLING ####
-
+# Agent instantiation
 qualification_agent = QualificationAgent()
 tone_agent = ToneAgent()
 inventory_agent = InventoryAgent()
