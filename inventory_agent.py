@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 load_dotenv()
 
 # Database configuration
-DATABASE_URL = "postgresql://uchk5knobsqvs7:pb82e547f1beee9040983d54a568e419b3d91a76ea16d6aaedd49b5fb41f1bcfe@ec2-23-20-93-193.compute-1.amazonaws.com:5432/d5pt3225ki095v"
+DATABASE_URL = "DATABASE_URL"
 
 def get_db_connection():
     """Create and return a database connection."""
