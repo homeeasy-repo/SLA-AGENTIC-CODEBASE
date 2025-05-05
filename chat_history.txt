@@ -1,4 +1,0 @@
-Client: whos there?
-Agent: Error in MainAgent: contents are required.
-Client: whos there?
-Agent: Error in MainAgent: contents are required.

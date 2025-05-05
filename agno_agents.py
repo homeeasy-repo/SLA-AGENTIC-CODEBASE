@@ -28,7 +28,7 @@ class QualificationTools(Toolkit):
         """
         Extracts client's motivation, urgency, and pain points using Socratic questioning.
         """
-        return shared_agent.run(
+        response = shared_agent.run(
             client_message,
             instructions="""
             You are a HomeEasy Leasing Consultant specializing in client qualification.
@@ -59,6 +59,7 @@ class QualificationTools(Toolkit):
             Always remember: "Extract statements; don’t make them."
             """
         )
+        return response.content
 
 class ToneTools(Toolkit):
     def __init__(self):
@@ -69,7 +70,7 @@ class ToneTools(Toolkit):
         """
         Decides correct communication tone (Concierge or Urgency) based on client qualification.
         """
-        return shared_agent.run(
+        response = shared_agent.run(
             qualification_summary,
             instructions="""
             You are a HomeEasy Tone Calibration Advisor.
@@ -98,6 +99,7 @@ class ToneTools(Toolkit):
             Always remember: "Speak in the client's interest, but guide them firmly."
             """
         )
+        return response.content
 
 class InventoryTools(Toolkit):
     def __init__(self):
@@ -148,13 +150,14 @@ class InventoryTools(Toolkit):
 
         Please match the client to the best available properties.
         """
-        return shared_agent.run(
+        response = shared_agent.run(
             prompt,
             instructions="""
             You are a HomeEasy Inventory Matching Specialist.
             Suggest the best rental options based on client's profile and available inventory.
             """
         )
+        return response.content
 
 class ActionPlanTools(Toolkit):
     def __init__(self):
@@ -165,7 +168,7 @@ class ActionPlanTools(Toolkit):
         """
         Creates a structured action plan for both client and agent.
         """
-        return shared_agent.run(
+        response = shared_agent.run(
             client_inventory_summary,
             instructions="""
              You are a HomeEasy Action Plan Creator.
@@ -200,6 +203,7 @@ class ActionPlanTools(Toolkit):
             Always remember: "Time is the enemy — act quickly."
             """
         )
+        return response.content
 
 class ObjectionHandlerTools(Toolkit):
     def __init__(self):
@@ -210,7 +214,7 @@ class ObjectionHandlerTools(Toolkit):
         """
         Handles client objections using fact-based techniques.
         """
-        return shared_agent.run(
+        response = shared_agent.run(
             objection_message,
             instructions="""
              You are a HomeEasy Objection Handling Specialist.
@@ -257,7 +261,7 @@ class ApplicationCloserTools(Toolkit):
         """
         Drives the client to complete the application process.
         """
-        return shared_agent.run(
+        response = shared_agent.run(
             application_prompt,
             instructions="""
              You are a HomeEasy Application Closing Specialist.
@@ -293,6 +297,8 @@ class ApplicationCloserTools(Toolkit):
             Always remember: "Frame the next step as a victory, not a burden."
             """
         )
+        return response.content
+
 
 class PostApplicationTools(Toolkit):
     def __init__(self):
@@ -303,7 +309,7 @@ class PostApplicationTools(Toolkit):
         """
         Manages post-application follow-ups and move-in coordination.
         """
-        return shared_agent.run(
+        response = shared_agent.run(
             post_application_context,
             instructions="""
             You are a HomeEasy Post-Application Follow-Up Specialist.
@@ -338,6 +344,8 @@ class PostApplicationTools(Toolkit):
             Always remember: "The sale is not complete until the keys are in the client's hand."
             """
         )
+        return response.content
+
 
 class SMSFormatterTools(Toolkit):
     def __init__(self):
@@ -348,7 +356,7 @@ class SMSFormatterTools(Toolkit):
         """
         Formats structured responses into short, natural SMS replies.
         """
-        return shared_agent.run(
+        response = shared_agent.run(
             full_response,
             instructions="""
             You are a HomeEasy SMS Formatting Specialist.
@@ -379,8 +387,15 @@ class SMSFormatterTools(Toolkit):
             Make the client feel they are texting a real human leasing agent.
 
             Always remember: "SMS = Short, Meaningful, Swift."
+            
+            You will only return the sms which will be sent to the client direclty nothing else should be returned.
+            only simple final sms should be returned.
+            no thinking or anything else should be returned. no observation etc.
+            For example:
+            Hi Ahmed! Amy Here from HomeEasy. I got your inquiry from one of the properties we work with. Can you tell me what you are looking for?
             """
         )
+        return response.content
 
 class MainAgent:
     """Main coordinating agent that orchestrates all specialized agents."""
@@ -511,12 +526,10 @@ class MainAgent:
             return f"Error in MainAgent: {str(e)}"
 
 # Initialize main agent
-main_agent = MainAgent()
+# main_agent = MainAgent()
 
-# # Example usage
+# # Example usage   
 # if __name__ == "__main__":
-#     response = main_agent.process_query({
-#         "chat_history": "Client: Hi, I'm looking for a 2-bedroom apartment",
-#         "inventory_list": "Available properties: ..."
-#     })
+#     formatter = SMSFormatterTools()
+#     response = formatter.format_sms("Client: Hi, I'm looking for a 2-bedroom apartment\nAvailable properties: ...")
 #     print(response)

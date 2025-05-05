@@ -882,10 +882,21 @@ Available Inventory:
 {full_context.get('inventory_list', '')}
 """
             logger.info("MainAgent processing: %s", combined_input)
-            messages = format_gemini_messages(self.system_message, combined_input)
-            structured_response = self.agent.invoke(messages)
-            structured_message = structured_response["output"]
+            # messages = format_gemini_messages(self.system_message, combined_input)
+            # structured_response = self.agent.invoke(messages)
+            # structured_message = structured_response["output"]
+            agent_prompt = f"{self.system_message}\n\n{combined_input}"
+            structured_message = self.agent.run(agent_prompt)
+
+            # sms_final = self.sms_formatter_agent.process_query(structured_message)
+            # return sms_final.strip()
             sms_final = self.sms_formatter_agent.process_query(structured_message)
+
+            # ✅ Remove hallucinated 'Example' blocks if present
+            if "Example 1" in sms_final or "Structured Agent Response" in sms_final:
+                logger.warning("Detected hallucinated training examples. Replacing with clarification message.")
+                return "Hey! Could you please clarify what you're looking for in an apartment so I can help better? 😊"
+
             return sms_final.strip()
         except Exception as e:
             logger.error("Error in MainAgent: %s", str(e))
@@ -901,3 +912,13 @@ application_closer_agent = ApplicationCloserAgent()
 post_application_agent = PostApplicationAgent()
 sms_formatter_agent = SMSFormatterAgent()
 main_agent = MainAgent()
+
+
+# Test the MainAgent
+test_context = {
+    "chat_history": "Client: Hi, I'm looking for a new apartment. What's your name?",
+    "inventory_list": "Inventory: 1-bedroom, 1 bath, $1500-$2000, 1 mile from downtown"
+}
+
+response = main_agent.process_query(test_context)
+print(response.content)
