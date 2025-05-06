@@ -10,7 +10,8 @@ from sqlalchemy.orm import sessionmaker
 load_dotenv()
 
 # Database configuration
-DATABASE_URL = "DATABASE_URL"
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 def get_db_connection():
     """Create and return a database connection."""
@@ -84,6 +85,7 @@ def format_client_requirements(requirements):
 
 def get_client_requirements(client_id: int) -> str:
     """Fetch client requirements from the database and format them."""
+    session = None
     try:
         session = get_db_connection()
         query = text("""
@@ -179,7 +181,12 @@ def get_client_requirements(client_id: int) -> str:
         print(f"Error fetching client requirements: {e}")
         raise
     finally:
-        session.close()
+        try:
+            if session:
+                session.close()
+        except Exception as close_err:
+            print(f"Warning: failed to close DB session: {close_err}")
+
 
 def get_api_key() -> str:
     """Get the Google API key from environment variable or raise an error."""
@@ -284,6 +291,7 @@ As the agent, you must independently craft a concise, engaging SMS draft to intr
 
 def get_client_markdown_content(client_id: int) -> str:
     """Fetch markdown content from notes for the client."""
+    session = None
     try:
         session = get_db_connection()
         query = text("""
@@ -318,7 +326,12 @@ def get_client_markdown_content(client_id: int) -> str:
         print(f"Error fetching markdown content: {e}")
         raise
     finally:
-        session.close()
+        try:
+            if session:
+                session.close()
+        except Exception as close_err:
+            print(f"Warning: failed to close DB session: {close_err}")
+
 
 def main():
     try:
