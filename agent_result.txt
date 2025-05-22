@@ -1,0 +1,322 @@
+Starting Main Agent Test...
+This agent uses other agents as tools internally!
+
+🏠 Testing Main Property Agent
+==================================================
+🎯 Processing Client ID: 704958
+------------------------------
+C:\Users\smb48\OneDrive\Desktop\Homeeasy Work Folder\SLA Folder\langcahin.py:513: LangChainDeprecationWarning: LangChain agents will continue to be supported, but it is recommended for new use cases to be built with LangGraph. LangGraph offers a more flexible and full-featured framework for building agents, including support for tool-calling, persistence of state, and human-in-the-loop workflows. For details, refer to the `LangGraph documentation <https://langchain-ai.github.io/langgraph/>`_ as well as guides for `Migrating from AgentExecutor <https://python.langchain.com/docs/how_to/migrate_agent/>`_ and LangGraph's `Pre-built ReAct agent <https://langchain-ai.github.io/langgraph/how-tos/create-react-agent/>`_.
+  self.agent = initialize_agent(
+🏠 Processing client 704958 with Main Property Agent...
+Requirements: Budget Range: $2000 - $
+Move-in Date: 2025-06-20
+Unit Details: 2 Bedroom(s), 2 Bathroom(s)
+Preferred Neighborhoods: Oak Park, Austin
+Credit Score: 672
+Chat History: === Complete Chat History ===
+
+[2025-05-22T13:28:03.000+00:00] Sales Rep - Operations Team:
+I need to double check a few details to make sure I find exactly what you're looking for. I'll reach back out to you very soon with some great options!
+
+[2025-05-22T13:22:09.000+00:00] Client - Kelechi Ogbonnaya:
+Sounds great! Let me know. My girlfriend is in town today so if we can get some tours today that would be great
+
+[2025-05-22T13:21:33.000+00:00] Sales Rep - May Ashley:
+Great, Kelechi! With a 672 credit score, a $2000 budget, and a preference for a 2-bedroom in Oak Park or Austin with a move-in by June 20th, I'm confident I can find some excellent options for you. I'll get back to you shortly with some perfect matches!
+
+[2025-05-22T13:18:55.000+00:00] Sales Rep - Amy Harper:
+I need to double check a few details to make sure I find exactly what you're looking for. I'll reach back out to you very soon with some great options!
+
+[2025-05-22T13:17:52.000+00:00] Client - Kelechi Ogbonnaya:
+Thanks. Need in unit washer and dryer and dishwasher too
+
+[2025-05-22T13:17:12.000+00:00] Sales Rep - May Roberts:
+Okay, Kelechi, thanks for that information.  Given your credit score and budget, I'll explore some options in Oak Park and Austin and get back to you shortly with some great choices.
+
+[2025-05-22T13:12:14.000+00:00] Client - Kelechi Ogbonnaya:
+672
+
+[2025-05-22T13:11:26.000+00:00] Sales Rep - Amy Scott:
+Okay, Kelechi,  to ensure I find the perfect apartment for you, can you tell me about your credit score? 
+
+[2025-05-22T13:06:38.000+00:00] Client - Kelechi Ogbonnaya:
+Around 2k
+
+[2025-05-22T13:05:56.000+00:00] Sales Rep - Amy Harper:
+Okay, Kelechi.  Before we look at apartments, what's your budget?
+
+[2025-05-22T13:01:15.000+00:00] Client - Kelechi Ogbonnaya:
+Before June 20th
+
+[2025-05-22T13:00:48.000+00:00] Sales Rep - Operations Team:
+Okay, Kelechi.  To help me find the perfect apartment, can you tell me your desired move-in date?        
+
+[2025-05-22T11:19:35.000+00:00] Client - Kelechi Ogbonnaya:
+Career
+
+[2025-05-22T01:31:41.000+00:00] Sales Rep - Homeeasy Alerts:
+What's the reason you're looking to move?
+
+[2025-05-22T01:26:42.000+00:00] Client - Kelechi Ogbonnaya:
+Hi! Looking for a 2bd around 2k month. Looking at Oak park, Austin area.
+
+[2025-05-21T14:04:54.000+00:00] Sales Rep - May Ashley:
+Hey Kelechi, I'm sorry for reaching out late, I got an inquiry on an apartment we work with on one of our partner apartment websites. Looks like you're looking to move in soon? Can you please tell me what you are looking for / your budget and any favorite neighborhoods?
+Inventory: Client Requirements | Budget: $2,000 | Move In Date: 2025-06-20 | Neighborhood: Oak Park, Austin | City: Oak Park | State: IL | Beds: 2 | Baths: 2
+------------------------------------
+
+Buildings within 5 miles:
+Name: 100-112 S. Harvey Ave. and 223-227 South B... | Address: 100-112 S Harvey Ave, Oak Park, IL 60302  
+Management Company: Greenplan Management Inc
+Management URL: https://www.apartments.com/pmc/greenplan-management-inc/m3v8kth/
+Rent Range: $1,675 - $2,379
+Phone Number: (708) 934-0990
+Listing URL: https://www.apartments.com/100-112-s-harvey-ave-and-223-227-south-b-oak-park-il/ge7ryzy/    
+Verified Listing: True
+Model: 104 & 108 S. Harvey E | Unit #: 104-3E | Model Price Range: $1,675 | Bed/Bath: 2 Beds 1 Bath 767 Sq Ft | Sqft: 767
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=100-112%20S.%20Harvey%20Ave.%20and%20223-227%20South%20B...%2C%20100-112%20S%20Harvey%20Ave%2C%20Oak%20Park%2C%20IL%2060302
+------------------------------------
+Name: 238-250 Washington Blvd. and 347-357 S. Ha... | Address: 238-250 Washington Blvd, Oak Park, IL 60302 Property Website
+Management Company: Greenplan Management Inc
+Management URL: https://www.apartments.com/pmc/greenplan-management-inc/m3v8kth/
+Rent Range: $1,409 - $1,599
+Phone Number: (630) 686-7545
+Listing URL: https://www.apartments.com/238-250-washington-blvd-and-347-357-s-ha-oak-park-il/df942xh/    
+Property Website: http://www.oakparkapartments.com/
+Verified Listing: True
+Model: 238 Washington G | Unit #: 238-GAR | Model Price Range: $1,599 | Bed/Bath: 2 Beds 1.5 Baths 1,510 Sq Ft | Sqft: 1300
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=238-250%20Washington%20Blvd.%20and%20347-357%20S.%20Ha...%2C%20238-250%20Washington%20Blvd%2C%20Oak%20Park%2C%20IL%2060302%20Property%20Website
+------------------------------------
+Name: Grand Park Apartments | Address: 1005-1037 Des Plaines Ave, Forest Park, IL 60130 Property Website 
+Management Company: Cym Living
+Management URL: https://www.apartments.com/pmc/cym-living/m646eqj/
+Rent Range: $1,240 - $1,785
+Phone Number: (708) 919-2158
+Listing URL: https://www.apartments.com/grand-park-apartments-forest-park-il/hywpdr2/
+Property Website: https://www.liveatgrandpark.com/?rcstdid=OQ%3d%3d-o6qee6pfj48%3d
+Verified Listing: True
+Model: 2 Bedroom 1.5 Bathroom - Renovated | Unit #: 1013-507 | Model Price Range: $1,785 | Bed/Bath: 2 Beds 1.5 Baths 950 Sq Ft | Sqft: 950 | Floor Plan: NaN | Apply Here: NaN
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=Grand%20Park%20Apartments%2C%201005-1037%20Des%20Plaines%20Ave%2C%20Forest%20Park%2C%20IL%2060130%20Property%20Website
+------------------------------------
+Name: 5735 W. Washington Blvd | Address: 5735 W Washington Blvd, Chicago, IL 60644
+Rent Range: $1,275 - $2,250
+Phone Number: (708) 934-9287
+Listing URL: https://www.apartments.com/5735-w-washington-blvd-chicago-il/ffs214v/
+Verified Listing: True
+Model: 2BR/1.0BA | Unit #: 5725-3 | Model Price Range: $1,275 – $1,750 | Bed/Bath: 2 Beds 1 Bath 750 Sq Ft | Sqft: 750 | Apply Here: https%3a%2f%2foakrntlmgmtllc.appfolio.com%2flistings%2frental_applications%2fnew%3flistable_uid%3db2f7b219-2b89-45ad-8ac4-827a2ec53a76%26source%3dApartments.com
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=5735%20W.%20Washington%20Blvd%2C%205735%20W%20Washington%20Blvd%2C%20Chicago%2C%20IL%2060644
+------------------------------------
+
+Buildings within 10 miles:
+Name: 30 East | Address: 30 E Balbo Ave, Chicago, IL 60605 Property Website
+Management Company: Greystar
+Management URL: https://www.apartments.com/pmc/greystar/dv0gtnl/
+Rent Range: $1,725 - $1,995
+Phone Number: (312) 548-9234
+Listing URL: https://www.apartments.com/30-east-chicago-il/dyw7pzh/
+Property Website: https://www.30eastapts.com/?switch_cls[id]=94845&utm_source=costar&utm_medium=referral 
+Verified Listing: True
+Model: 2 BEDROOM/2 BATHROOM - B1 | Unit #: Private | Model Price Range: $1,895 / Person | Bed/Bath: 2 Beds 2 Baths 845 Sq Ft | Sqft: 845
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=30%20East%2C%2030%20E%20Balbo%20Ave%2C%20Chicago%2C%20IL%2060605%20Property%20Website
+------------------------------------
+Name: 7538 W Lawrence Ave | Address: 7538 W Lawrence Ave, Harwood Heights, IL 60706
+Rent Range: $2,000
+Phone Number: (708) 734-6063
+Listing URL: https://www.apartments.com/7538-w-lawrence-ave-harwood-heights-il/31cnl5f/
+Verified Listing: True
+Model: 2BD/1BA | Unit #: 2NE | Model Price Range: $2,000 | Bed/Bath: 2 Beds 1 Bath 750 Sq Ft | Sqft: 750 
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=7538%20W%20Lawrence%20Ave%2C%207538%20W%20Lawrence%20Ave%2C%20Harwood%20Heights%2C%20IL%2060706
+------------------------------------
+Name: 6157 S Washtenaw Ave | Address: 6157 S Washtenaw Ave, Chicago, IL 60629 Leasing Office: 3630 W 51st St, Chicago, IL 60632
+Rent Range: $1,300 - $1,600
+Phone Number: (855) 612-8717
+Listing URL: https://www.apartments.com/6157-s-washtenaw-ave-chicago-il/kb8jhvc/
+Verified Listing: True
+Model: Two Bedroom 80% | Unit #: 101 | Model Price Range: $1,300 – $1,400 | Bed/Bath: 2 Beds 1 Bath 785 Sq Ft | Sqft: 785
+Model: Two Bedroom 80% | Unit #: 201 | Model Price Range: $1,300 – $1,400 | Bed/Bath: 2 Beds 1 Bath 785 Sq Ft | Sqft: 785
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=6157%20S%20Washtenaw%20Ave%2C%206157%20S%20Washtenaw%20Ave%2C%20Chicago%2C%20IL%2060629%20Leasing%20Office:%203630%20W%2051st%20St%2C%20Chicago%2C%20IL%2060632
+------------------------------------
+Name: The Bennington | Address: 100-130 George St, Bensenville, IL 60106 Property Website
+Rent Range: $1,436 - $4,231
+Phone Number: (630) 534-9076
+Listing URL: https://www.apartments.com/the-bennington-bensenville-il/rrx6s52/
+Property Website: https://www.livebenningtonapts.com/
+Move-in Special: Limited time special- Be the first 6 people to apply and get $500 off your first month's rent or the next 6 and get $350 off. *Must apply with-in 48 hours of touring and move in by 12/15       
+Verified Listing: True
+Model: Ten 30 | Unit #: 130-604 | Model Price Range: $1,753 – $4,231 | Bed/Bath: 2 Beds 2 Baths 1,030 Sq Ft | Sqft: 1030 | Apply Here: http%3a%2f%2flivebenningtonapts.securecafe.com%2fonlineleasing%2fthe-bennington0%2foleapplication.aspx%3fstepname%3dRentalOptions%26UnitID%3d33466755%26myOlePropertyId%3d1585131%26floorPlans%3d4464653%26src%3d3%26rcstdid%3dOQ%253d%253d-o6qee6pfj48%253d
+Model: Ten 30 | Unit #: 130-203 | Model Price Range: $1,753 – $4,231 | Bed/Bath: 2 Beds 2 Baths 1,030 Sq Ft | Sqft: 1030 | Apply Here: http%3a%2f%2flivebenningtonapts.securecafe.com%2fonlineleasing%2fthe-bennington0%2foleapplication.aspx%3fstepname%3dRentalOptions%26UnitID%3d33466634%26myOlePropertyId%3d1585131%26floorPlans%3d4464653%26src%3d3%26rcstdid%3dOQ%253d%253d-o6qee6pfj48%253d
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=The%20Bennington%2C%20100-130%20George%20St%2C%20Bensenville%2C%20IL%2060106%20Property%20Website
+------------------------------------
+Name: Eden Commons | Address: 2701 S Indiana Ave, Chicago, IL 60616 Property Website
+Rent Range: $1,254 - $2,214
+Phone Number: (708) 298-4337
+Listing URL: https://www.apartments.com/eden-commons-chicago-il/36ycgde/
+Property Website: https://www.liveedencommons.com/?rcstdid=OQ%3d%3d-o6qee6pfj48%3d
+Verified Listing: True
+Model: Two Bedroom | Unit #: 01-1706 | Model Price Range: $1,739 – $1,879 | Bed/Bath: 2 Beds 1 Bath 784 Sq Ft | Sqft: 784 | Floor Plan: NaN | Apply Here: NaN
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=Eden%20Commons%2C%202701%20S%20Indiana%20Ave%2C%20Chicago%2C%20IL%2060616%20Property%20Website
+------------------------------------
+
+Buildings within 15 miles:
+Name: The Element | Address: 1550 W Dempster St, Mount Prospect, IL 60056 Property Website
+Management Company: Monument Real Estate Services
+Management URL: https://www.apartments.com/pmc/monument-real-estate-services/4h6wf2h/
+Rent Range: $1432.0 - $3081.0
+Phone Number: (224) 479-0310
+Listing URL: https://www.apartments.com/the-element-mount-prospect-il/cs324zg/
+Property Website: https://www.theelementaptsil.com/?utm_source=Apartments.com
+Verified Listing: True
+Model: Elm | Unit #: M12-M12H | Model Price Range: $1,537 – $2,456 | Bed/Bath: 2 Beds 1 Bath 850 Sq Ft | Sqft: 850 | Floor Plan: NaN | Apply Here: https://www.theelementaptsil.com/Apartments/module/application_authentication/popup/false/kill_session/1/property[id]/518330/property_floorplan[id]/784495/from_check_availability/1/switch_cls[id]/67983/unit_space[id]/4585680/show_in_popup/false/selec
+View on Google Maps: http://www.google.com/maps/search/?api=1&query=The%20Element%2C%201550%20W%20Dempster%20St%2C%20Mount%20Prospect%2C%20IL%2060056%20Property%20Website
+------------------------------------
+Name: 5500 S. Cornell Avenue | Address: 5493 S Cornell Ave, Chicago, IL 60637 Property Website
+Management Company: Mac Properties
+Management URL: https://www.apartments.com/pmc/mac-properties/y5lst3s/
+Rent Range: $1,145 - $4,950
+Phone Number: (773) 906-4543
+Listing URL: https://www.apartments.com/5500-s-cornell-avenue-chicago-il/stsyr94/
+Property Website: https://www.macapartments.com/property/5500-S-Cornell?utm_source=Apartments.com&utm_medium=Internet%20Listings%20Service&utm_campaign=Apartments.com&utm_term=WebClick&utm_content=5500%20S.%20Cornell%20Avenue&rdnaLabel=Apartments.com
+Verified Listing: True
+Model: 5500-2bD | Unit #: 1617-2 | Mode
+Client Info: Name: Kelechi Ogbonnaya, Email: [{'type': 'home', 'value': 'kcogbonnaya@gmail.com', 'status': 'Valid', 'isPrimary': 1}], Address: [{'city': 'Oak Park', 'code': '', 'type': '', 'state': 'IL', 'street': 'Pleasant Street', 'country': ''}], Neighborhood: None, Max Salary: $None
+
+
+> Entering new AgentExecutor chain...
+Thought:First I need to analyze Kelechi's profile using the `analyze_client_profile` tool.  I'll provide it with the client requirements, chat history, and client info.
+
+Action: analyze_client_profile
+Action Input:
+```json
+{
+  "requirements": {
+    "Budget Range": "$2000 - ",
+    "Move-in Date": "2025-06-20",
+    "Unit Details": "2 Bedroom(s), 2 Bathroom(s)",
+    "Preferred Neighborhoods": "Oak Park, Austin",
+    "Credit Score": 672,
+    "In-unit Washer/Dryer": true,
+    "Dishwasher": true
+  },
+  "chat_history": "[2025-05-22T13:28:03.000+00:00] Sales Rep - Operations Team: I need to double check a few details to make sure I find exactly what you're looking for. I'll reach back out to you very soon with some great options!\n[2025-05-22T13:22:09.000+00:00] Client - Kelechi Ogbonnaya: Sounds great! Let me know. My girlfriend is in town today so if we can get some tours today that would be great\n[2025-05-22T13:21:33.000+00:00] Sales Rep - May Ashley: Great, Kelechi! With a 672 credit score, a $2000 budget, and a preference for a 2-bedroom in Oak Park or Austin with a move-in by June 20th, I'm confident I can find some excellent options for you. I'll get back to you shortly with some perfect matches!\n[2025-05-22T13:18:55.000+00:00] Sales Rep - Amy Harper: I need to double check a few details to make sure I find exactly what you're looking for. I'll reach back out to you very soon with some great options!\n[2025-05-22T13:17:52.000+00:00] Client - Kelechi Ogbonnaya: Thanks. Need in unit washer and dryer and dishwasher too\n[2025-05-22T13:17:12.000+00:00] Sales Rep - May Roberts: Okay, Kelechi, thanks for that information.  Given your credit score and budget, I'll explore some options in Oak Park and Austin and get back to you shortly with some great choices.\n[2025-05-22T13:12:14.000+00:00] Client - Kelechi Ogbonnaya: 672\n[2025-05-22T13:11:26.000+00:00] Sales Rep - Amy Scott: Okay, Kelechi,  to ensure I find the perfect apartment for you, can you tell me about your credit score?\n[2025-05-22T13:06:38.000+00:00] Client - Kelechi Ogbonnaya: Around 2k\n[2025-05-22T13:05:56.000+00:00] Sales Rep - Amy Harper: Okay, Kelechi.  Before we look at apartments, what's your budget?\n[2025-05-22T13:01:15.000+00:00] Client - Kelechi Ogbonnaya: Before June 20th\n[2025-05-22T13:00:48.000+00:00] Sales Rep - Operations Team: Okay, Kelechi.  To help me find the perfect apartment, can you tell me your desired move-in date?\n[2025-05-22T11:19:35.000+00:00] Client - Kelechi Ogbonnaya: Career\n[2025-05-22T01:31:41.000+00:00] Sales Rep - Homeeasy Alerts: What's the reason you're looking to move?\n[2025-05-22T01:26:42.000+00:00] Client - Kelechi Ogbonnaya: Hi! Looking for a 2bd around 2k month. Looking at Oak park, Austin area.",
+  "client_info": {
+    "Name": "Kelechi Ogbonnaya",
+    "Email": "[{'type': 'home', 'value': 'kcogbonnaya@gmail.com', 'status': 'Valid', 'isPrimary': 1}]",  
+    "Address": "[{'city': 'Oak Park', 'code': '', 'type': '', 'state': 'IL', 'street': 'Pleasant Street', 'country': ''}]",
+    "Neighborhood": null,
+    "Max Salary": null
+  }
+}
+```
+Observation: **Financial Stability and Budget:** Kelechi's stated budget is around $2000/month.  His credit score of 672 suggests some financial risk but is not necessarily disqualifying.  Lack of salary information prevents a complete assessment.
+
+**Demographics:** Kelechi Ogbonnaya appears to be an adult male, possibly living in Oak Park, IL.  He mentions a girlfriend, suggesting he may be in a relationship.  Further details on age, occupation, and family status are unavailable.
+
+**Urgency of Move:**  The desired move-in date is June 20th, 2025, indicating a relatively urgent need for housing.
+
+**Likelihood of Approval:** Approval is uncertain.  The $2000 budget might be limiting depending on market rates in Oak Park/Austin.  The 672 credit score presents a moderate risk.  Further information on income and rental history is crucial for a definitive assessment.
+
+**Communication Style:**  Kelechi's communication is concise and direct.  He readily provides requested information.
+Thought:Thought:Now I need to find the best matching property from the inventory using the `find_inventory_match` tool.  I'll need to provide the requirements, inventory data, and chat history.
+
+Action: find_inventory_match
+Action Input:
+```json
+{
+  "requirements": {
+    "Budget Range": "$2000 - ",
+    "Move-in Date": "2025-06-20",
+    "Unit Details": "2 Bedroom(s), 2 Bathroom(s)",
+    "Preferred Neighborhoods": "Oak Park, Austin",
+    "Credit Score": 672,
+    "In-unit Washer/Dryer": true,
+    "Dishwasher": true
+  },
+  "inventory": "Client Requirements | Budget: $2,000 | Move In Date: 2025-06-20 | Neighborhood: Oak Park, Austin | City: Oak Park | State: IL | Beds: 2 | Baths: 2\n------------------------------------\n\nBuildings within 5 miles:\nName: 100-112 S. Harvey Ave. and 223-227 South B... | Address: 100-112 S Harvey Ave, Oak Park, IL 60302\nManagement Company: Greenplan Management Inc\nManagement URL: https://www.apartments.com/pmc/greenplan-management-inc/m3v8kth/\nRent Range: $1,675 - $2,379\nPhone Number: (708) 934-0990\nListing URL: https://www.apartments.com/100-112-s-harvey-ave-and-223-227-south-b-oak-park-il/ge7ryzy/\nVerified Listing: True\nModel: 104 & 108 S. Harvey E | Unit #: 104-3E | Model Price Range: $1,675 | Bed/Bath: 2 Beds 1 Bath 767 Sq Ft | Sqft: 767\nView on Google Maps: http://www.google.com/maps/search/?api=1&query=100-112%20S.%20Harvey%20Ave.%20and%20223-227%20South%20B...%2C%20100-112%20S%20Harvey%2C%20Oak%20Park%2C%20IL%2060302\n------------------------------------\nName: 238-250 Washington Blvd. and 347-357 S. Ha... | Address: 238-250 Washington Blvd, Oak Park, IL 60302 Property Website\nManagement Company: Greenplan Management Inc\nManagement URL: https://www.apartments.com/pmc/greenplan-management-inc/m3v8kth/\nRent Range: $1,409 - $1,599\nPhone Number: (630) 686-7545\nListing URL: https://www.apartments.com/238-250-washington-blvd-and-347-357-s-ha-oak-park-il/df942xh/\nProperty Website: http://www.oakparkapartments.com/\nVerified Listing: True\nModel: 238 Washington G | Unit #: 238-GAR | Model Price Range: $1,599 | Bed/Bath: 2 Beds 1.5 Baths 1,510 Sq Ft | Sqft: 1300\nView on Google Maps: http://www.google.com/maps/search/?api=1&query=238-250%20Washington%20Blvd.%20and%20347-357%20S.%20Ha...%2C%20238-250%20Washington%20Blvd%2C%20Oak%20Park%2C%20IL%2060302%20Property%20Website\n------------------------------------\nName: Grand Park Apartments | Address: 1005-1037 Des Plaines Ave, Forest Park, IL 60130 Property Website\nManagement Company: Cym Living\nManagement URL: https://www.apartments.com/pmc/cym-living/m646eqj/\nRent Range: $1,240 - $1,785\nPhone Number: (708) 919-2158\nListing URL: https://www.apartments.com/grand-park-apartments-forest-park-il/hywpdr2/\nProperty Website: https://www.liveatgrandpark.com/?rcstdid=OQ%3d%3d-o6qee6pfj48%3d\nVerified Listing: True\nModel: 2 Bedroom 1.5 Bathroom - Renovated | Unit #: 1013-507 | Model Price Range: $1,785 | Bed/Bath: 2 Beds 1.5 Baths 950 Sq Ft | Sqft: 950 | Floor Plan: NaN | Apply Here: NaN\nView on Google Maps: http://www.google.com/maps/search/?api=1&query=Grand%20Park%20Apartments%2C%201005-1037%20Des%20Plaines%20Ave%2C%20Forest%20Park%2C%20IL%2060130%20Property%20Website\n------------------------------------\nName: 5735 W. Washington Blvd | Address: 5735 W Washington Blvd, Chicago, IL 60644\nRent Range: $1,275 - $2,250\nPhone Number: (708) 934-9287\nListing URL: https://www.apartments.com/5735-w-washington-blvd-chicago-il/ffs214v/\nVerified Listing: True\nModel: 2BR/1.0BA | Unit #: 5725-3 | Model Price Range: $1,275 – $1,750 | Bed/Bath: 2 Beds 1 Bath 750 Sq Ft | Sqft: 750 | Apply Here: https%3a%2f%2foakrntlmgmtllc.appfolio.com%2flistings%2frental_applications%2fnew%3flistable_uid%3db2f7b219-2b89-45ad-8ac4-827a2ec53a76%26source%3dApartments.com\nView on Google Maps: http://www.google.com/maps/search/?api=1&query=5735%20W.%20Washington%20Blvd%2C%205735%20W%20Washington%20Blvd%2C%20Chicago%2C%20IL%2060644\n------------------------------------\n\nBuildings within 10 miles:\nName: 30 East | Address: 30 E Balbo Ave, Chicago, IL 60605 Property Website\nManagement Company: Greystar\nManagement URL: https://www.apartments.com/pmc/greystar/dv0gtnl/\nRent Range: $1,725 - $1,995\nPhone Number: (312) 548-9234\nListing URL: https://www.apartments.com/30-east-chicago-il/dyw7pzh/\nProperty Website: https://www.30eastapts.com/?switch_cls[id]=94845&utm_source=costar&utm_medium=referral\nVerified Listing: True\nModel: 2 BEDROOM/2 BATHROOM - B1 | Unit #: Private | Model Price Range: $1,895 / Person | Bed/Bath: 2 Beds 2 Baths 845 Sq Ft | Sqft: 845\nView on Google Maps: http://www.google.com/maps/search/?api=1&query=30%20East%2C%2030%20E%20Balbo%20Ave%2C%20Chicago%2C%20IL%2060605%20Property%20Website\n------------------------------------\nName: 7538 W Lawrence Ave | Address: 7538 W Lawrence Ave, Harwood Heights, IL 60706\nRent Range: $2,000\nPhone Number: (708) 734-6063\nListing URL: https://www.apartments.com/7538-w-lawrence-ave-harwood-heights-il/31cnl5f/\nVerified Listing: True\nModel: 2BD/1BA | Unit #: 2NE | Model Price Range: $2,000 | Bed/Bath: 2 Beds 1 Bath 750 Sq Ft | Sqft: 750\nView on Google Maps: http://www.google.com/maps/search/?api=1&query=7538%20W%20Lawrence%20Ave%2C%207538%20W%20Lawrence%20Ave%2C%20Harwood%20Heights%2C%20IL%2060706\n------------------------------------\n...", 
+  "chat_history": "[2025-05-22T13:28:03.000+00:00] Sales Rep - Operations Team: I need to double check a few details to make sure I find exactly what you're looking for. I'll reach back out to you very soon with some great options!\n[2025-05-22T13:22:09.000+00:00] Client - Kelechi Ogbonnaya: Sounds great! Let me know. My girlfriend is in town today so if we can get some tours today that would be great\n[2025-05-22T13:21:33.000+00:00] Sales Rep - May Ashley: Great, Kelechi! With a 672 credit score, a $2000 budget, and a preference for a 2-bedroom in Oak Park or Austin with a move-in by June 20th, I'm confident I can find some excellent options for you. I'll get back to you shortly with some perfect matches!\n[2025-05-22T13:18:55.000+00:00] Sales Rep - Amy Harper: I need to double check a few details to make sure I find exactly what you're looking for. I'll reach back out to you very soon with some great options!\n[2025-05-22T13:17:52.000+00:00] Client - Kelechi Ogbonnaya: Thanks. Need in unit washer and dryer and dishwasher too\n[2025-05-22T13:17:12.000+00:00] Sales Rep - May Roberts: Okay, Kelechi, thanks for that information.  Given your credit score and budget, I'll explore some options in Oak Park and Austin and get back to you shortly with some great choices.\n[2025-05-22T13:12:14.000+00:00] Client - Kelechi Ogbonnaya: 672\n[2025-05-22T13:11:26.000+00:00] Sales Rep - Amy Scott: Okay, Kelechi,  to ensure I find the perfect apartment for you, can you tell me about your credit score?\n[2025-05-22T13:06:38.000+00:00] Client - Kelechi Ogbonnaya: Around 2k\n[2025-05-22T13:05:56.000+00:00] Sales Rep - Amy Harper: Okay, Kelechi.  Before we look at apartments, what's your budget?\n[2025-05-22T13:01:15.000+00:00] Client - Kelechi Ogbonnaya: Before June 20th\n[2025-05-22T13:00:48.000+00:00] Sales Rep - Operations Team: Okay, Kelechi.  To help me find the perfect apartment, can you tell me your desired move-in date?\n[2025-05-22T11:19:35.000+00:00] Client - Kelechi Ogbonnaya: Career\n[2025-05-22T01:31:41.000+00:00] Sales Rep - Homeeasy Alerts: What's the reason you're looking to move?\n[2025-05-22T01:26:42.000+00:00] Client - Kelechi Ogbonnaya: Hi! Looking for a 2bd around 2k month. Looking at Oak park, Austin area."
+}
+```
+Observation: BEST MATCH FOUND: Yes
+BUILDING NAME: 100-112 S. Harvey Ave. and 223-227 South B...
+ADDRESS: 100-112 S Harvey Ave, Oak Park, IL 60302
+UNIT DETAILS: 2 Beds 1 Bath, 767 Sq Ft
+LISTED RENT: $1675
+MOVE-IN SPECIAL: None
+NET EFFECTIVE RENT: $1675
+ANNUAL SAVINGS: $0
+APPLICATION LINK: https://www.apartments.com/100-112-s-harvey-ave-and-223-227-south-b-oak-park-il/ge7ryzy/
+GOOGLE MAPS: http://www.google.com/maps/search/?api=1&query=100-112%20S.%20Harvey%20Ave.%20and%20223-227%20South%20B...%2C%20100-112%20S%20Harvey%2C%20Oak%20Park%2C%20IL%2060302
+MATCH REASONING: This unit is located in Oak Park, within the client's preferred neighborhood and budget.  While it only has one bathroom instead of the requested two, it's the closest match available in the provided inventory that meets the budget and location preferences.  Further information is needed to determine if in-unit washer/dryer and dishwasher are included.
+Thought:Thought:Now I'll generate an SMS message for Kelechi using the `generate_client_message` tool.
+
+Action: generate_client_message
+Action Input:
+```json
+{
+  "property_info": {
+    "BUILDING NAME": "100-112 S. Harvey Ave. and 223-227 South B...",
+    "ADDRESS": "100-112 S Harvey Ave, Oak Park, IL 60302",
+    "UNIT DETAILS": "2 Beds 1 Bath, 767 Sq Ft",
+    "LISTED RENT": "$1675",
+    "MOVE-IN SPECIAL": "None",
+    "NET EFFECTIVE RENT": "$1675",
+    "APPLICATION LINK": "https://www.apartments.com/100-112-s-harvey-ave-and-223-227-south-b-oak-park-il/ge7ryzy/",
+    "GOOGLE MAPS": "http://www.google.com/maps/search/?api=1&query=100-112%20S.%20Harvey%20Ave.%20and%20223-227%20South%20B...%2C%20100-112%20S%20Harvey%2C%20Oak%20Park%2C%20IL%2060302"
+  },
+  "client_profile": {
+    "Name": "Kelechi Ogbonnaya",
+    "Email": "[{'type': 'home', 'value': 'kcogbonnaya@gmail.com', 'status': 'Valid', 'isPrimary': 1}]",  
+    "Address": "[{'city': 'Oak Park', 'code': '', 'type': '', 'state': 'IL', 'street': 'Pleasant Street', 'country': ''}]",
+    "Neighborhood": null,
+    "Max Salary": null,
+    "Budget": "$2000",
+    "Move-in Date": "2025-06-20",
+    "Credit Score": 672
+  },
+  "match_found": true,
+  "client_name": "Kelechi",
+  "chat_history": "[2025-05-22T13:28:03.000+00:00] Sales Rep - Operations Team: I need to double check a few details to make sure I find exactly what you're looking for. I'll reach back out to you very soon with some great options!\n[2025-05-22T13:22:09.000+00:00] Client - Kelechi Ogbonnaya: Sounds great! Let me know. My girlfriend is in town today so if we can get some tours today that would be great\n[2025-05-22T13:21:33.000+00:00] Sales Rep - May Ashley: Great, Kelechi! With a 672 credit score, a $2000 budget, and a preference for a 2-bedroom in Oak Park or Austin with a move-in by June 20th, I'm confident I can find some excellent options for you. I'll get back to you shortly with some perfect matches!\n[2025-05-22T13:18:55.000+00:00] Sales Rep - Amy Harper: I need to double check a few details to make sure I find exactly what you're looking for. I'll reach back out to you very soon with some great options!\n[2025-05-22T13:17:52.000+00:00] Client - Kelechi Ogbonnaya: Thanks. Need in unit washer and dryer and dishwasher too\n[2025-05-22T13:17:12.000+00:00] Sales Rep - May Roberts: Okay, Kelechi, thanks for that information.  Given your credit score and budget, I'll explore some options in Oak Park and Austin and get back to you shortly with some great choices.\n[2025-05-22T13:12:14.000+00:00] Client - Kelechi Ogbonnaya: 672\n[2025-05-22T13:11:26.000+00:00] Sales Rep - Amy Scott: Okay, Kelechi,  to ensure I find the perfect apartment for you, can you tell me about your credit score?\n[2025-05-22T13:06:38.000+00:00] Client - Kelechi Ogbonnaya: Around 2k\n[2025-05-22T13:05:56.000+00:00] Sales Rep - Amy Harper: Okay, Kelechi.  Before we look at apartments, what's your budget?\n[2025-05-22T13:01:15.000+00:00] Client - Kelechi Ogbonnaya: Before June 20th\n[2025-05-22T13:00:48.000+00:00] Sales Rep - Operations Team: Okay, Kelechi.  To help me find the perfect apartment, can you tell me your desired move-in date?\n[2025-05-22T11:19:35.000+00:00] Client - Kelechi Ogbonnaya: Career\n[2025-05-22T01:31:41.000+00:00] Sales Rep - Homeeasy Alerts: What's the reason you're looking to move?\n[2025-05-22T01:26:42.000+00:00] Client - Kelechi Ogbonnaya: Hi! Looking for a 2bd around 2k month. Looking at Oak park, Austin area."
+}
+```
+Observation: Hi Kelechi! I have a unit for you: 2 Bed/1 Bath in Oak Park ($1675/mo).  767 sq ft.  See it here: https://www.apartments.com/100-112-s-harvey-ave-and-223-227-south-b-oak-park-il/ge7ryzy/
+Thought:Thought:I now have all the necessary information to construct the final JSON response.
+
+Final Answer:
+```json
+{
+  "summary": "Kelechi Ogbonnaya is looking for a 2-bedroom, 2-bathroom apartment in Oak Park or Austin, IL with a budget of around $2000 and a move-in date before June 20th, 2025.  His credit score is 672.  He also requires in-unit washer/dryer and a dishwasher.",
+  "message": "Hi Kelechi! I have a unit for you: 2 Bed/1 Bath in Oak Park ($1675/mo).  767 sq ft.  See it here: https://www.apartments.com/100-112-s-harvey-ave-and-223-227-south-b-oak-park-il/ge7ryzy/",        
+  "inventory_found": true
+}
+```
+
+> Finished chain.
+
+📊 FINAL RESULTS:
+==============================
+
+👤 CLIENT SUMMARY:
+   Kelechi Ogbonnaya is looking for a 2-bedroom, 2-bathroom apartment in Oak Park or Austin, IL with a budget of around $2000 and a move-in date before June 20th, 2025.  His credit score is 672.  He also requires in-unit washer/dryer and a dishwasher.
+
+🏠 INVENTORY MATCH FOUND:
+   ✅ YES
+
+📱 MESSAGE FOR CLIENT:
+   "Hi Kelechi! I have a unit for you: 2 Bed/1 Bath in Oak Park ($1675/mo).  767 sq ft.  See it here: https://www.apartments.com/100-112-s-harvey-ave-and-223-227-south-b-oak-park-il/ge7ryzy/"
+   Character Count: 186
+   SMS Ready: ❌ Too long
+   Human-like: ✅ Yes
+
+🔧 Raw JSON Response:
+{
+  "summary": "Kelechi Ogbonnaya is looking for a 2-bedroom, 2-bathroom apartment in Oak Park or Austin, IL with a budget of around $2000 and a move-in date before June 20th, 2025.  His credit score is 672.  He also requires in-unit washer/dryer and a dishwasher.",
+  "message": "Hi Kelechi! I have a unit for you: 2 Bed/1 Bath in Oak Park ($1675/mo).  767 sq ft.  See it here: https://www.apartments.com/100-112-s-harvey-ave-and-223-227-south-b-oak-park-il/ge7ryzy/",
+  "inventory_found": true
+}
+
+==================================================
+✅ Test completed successfully!
+🎉 Single agent coordinated everything and returned clean JSON!
+
+📋 SUMMARY: Client profile analyzed
+📨 MESSAGE: Ready to send to client
+🏠 MATCH: Property found

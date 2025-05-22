@@ -1,4 +1,4 @@
-import streamlit as st
+# import streamlit as st
 from dotenv import load_dotenv
 import os
 from typing import List, Dict, Any
@@ -190,49 +190,35 @@ def get_client_markdown_content(client_id: int) -> str:
         except Exception as close_err:
             print(f"Warning: failed to close DB session: {close_err}")
 
-def get_previous_messages(client_id: int) -> list:
-    """Fetch previous messages sent to the client."""
-    session = None
-    try:
-        session = get_db_connection()
-        query = text("""
-            SELECT message, created
-            FROM textmessage 
-            WHERE client_id = :client_id 
-            AND is_incoming = false
-            ORDER BY created DESC
-        """)
-        results = session.execute(query, {"client_id": client_id}).fetchall()
-        return [(row[0], row[1]) for row in results]
-    except Exception as e:
-        print(f"Error fetching previous messages: {e}")
-        return []
-    finally:
-        if session:
-            session.close()
+# Removed get_previous_messages function - using chat_history instead
 
 def get_client_chat_history(client_id: int) -> str:
-    """Get comprehensive chat history for the client."""
+    """Get chat history for the client from client_fub_messages table."""
     session = None
     try:
         session = get_db_connection()
         
-        # Get all text messages
+        # Get chat history from client_fub_messages table
         query = text("""
-            SELECT message, created, is_incoming
-            FROM textmessage 
+            SELECT message
+            FROM client_fub_messages 
             WHERE client_id = :client_id 
-            ORDER BY created ASC
+            ORDER BY created_at DESC
+            LIMIT 1
         """)
-        results = session.execute(query, {"client_id": client_id}).fetchall()
+        result = session.execute(query, {"client_id": client_id}).fetchone()
         
-        chat_history = []
-        for row in results:
-            message, created, is_incoming = row
-            sender = "Client" if is_incoming else "Agent"
-            chat_history.append(f"[{created}] {sender}: {message}")
+        if not result:
+            print(f"No chat history found for client_id: {client_id}")
+            return ""
         
-        return "\n".join(chat_history)
+        raw_message = result[0]
+        
+        if not raw_message:
+            return ""
+        
+        # Return the raw message content - let the LLM parse it
+        return raw_message.strip()
     
     except Exception as e:
         print(f"Error fetching chat history: {e}")
@@ -316,45 +302,76 @@ def analyze_client_profile_tool(input_data: str) -> str:
         return f"Error analyzing client profile: {str(e)}"
 
 def find_inventory_match_tool(input_data: str) -> str:
-    """Tool function to find matching inventory."""
+    """Tool function to find the single best matching inventory unit."""
     try:
         # Parse input if it's JSON
         if input_data.startswith('{'):
             data = json.loads(input_data)
             requirements = data.get('requirements', '')
             inventory = data.get('inventory', '')
-            previous_messages = data.get('previous_messages', '')
+            chat_history = data.get('chat_history', '')
         else:
             requirements = input_data
             inventory = ""
-            previous_messages = ""
+            chat_history = ""
 
         llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
             google_api_key=GOOGLE_API_KEY,
-            temperature=0.7
+            temperature=0.3  # Lower temperature for more consistent matching
         )
 
         matching_prompt = f"""
-        Find the best property match for this client from the available inventory.
+        You are a property matching expert. Analyze the inventory and find the SINGLE BEST UNIT that matches this client's requirements.
 
         CLIENT REQUIREMENTS:
         {requirements}
 
-        AVAILABLE INVENTORY:
+        CLIENT CHAT HISTORY (for context):
+        {chat_history}
+
+        AVAILABLE INVENTORY FORMAT:
         {inventory}
 
-        PREVIOUS MESSAGES:
-        {previous_messages}
+        INVENTORY PARSING INSTRUCTIONS:
+        The inventory shows buildings with this format:
+        - Building name, address, rent range, management company
+        - Move-in specials (like "$500 Off first month")
+        - Individual units with specific prices, bed/bath, sqft
+        - Application links and details
 
-        Look for:
-        1. Budget compatibility
-        2. Location match
-        3. Property features
-        4. Special offers/incentives
-        5. Commission potential
+        YOUR TASK:
+        1. **Calculate Net Effective Rent**: If there are move-in specials like "$500 off first month", calculate the true monthly cost over a 12-month lease.
+           Formula: (Total rent for 12 months - discount) / 12 months
+           Example: $1500/month with $500 off first month = ((1500*12) - 500) / 12 = $1458.33 effective monthly
 
-        Return the best matching property with details and reasoning. If no good match, explain why.
+        2. **Find the SINGLE BEST UNIT** based on:
+           - Budget compatibility (use net effective rent)
+           - Bedroom/bathroom requirements
+           - Location preferences from requirements and chat history
+           - Move-in date availability
+           - Special amenities mentioned in requirements
+
+        3. **Prioritize units with move-in specials** as they offer better value
+
+        RESPONSE FORMAT:
+        Return ONLY the best matching unit with this exact structure:
+
+        BEST MATCH FOUND: [Yes/No]
+        BUILDING NAME: [Building name]
+        ADDRESS: [Full address]
+        UNIT DETAILS: [Bed/Bath, Sqft]
+        LISTED RENT: $[original monthly rent]
+        MOVE-IN SPECIAL: [special offer if any]
+        NET EFFECTIVE RENT: $[calculated monthly effective rent]
+        ANNUAL SAVINGS: $[total savings from specials]
+        APPLICATION LINK: [direct application URL]
+        GOOGLE MAPS: [maps link]
+        MATCH REASONING: [Why this is the best match - 2-3 sentences]
+
+        If no good match found, return:
+        BEST MATCH FOUND: No
+        REASON: [Explain why no units meet the criteria]
         """
 
         response = llm.invoke(matching_prompt)
@@ -364,7 +381,7 @@ def find_inventory_match_tool(input_data: str) -> str:
         return f"Error finding inventory match: {str(e)}"
 
 def generate_client_message_tool(input_data: str) -> str:
-    """Tool function to generate human-like client message."""
+    """Tool function to generate engaging, location-specific client message following HomeEasy guidelines."""
     try:
         # Parse input if it's JSON
         if input_data.startswith('{'):
@@ -372,10 +389,14 @@ def generate_client_message_tool(input_data: str) -> str:
             property_info = data.get('property_info', '')
             client_profile = data.get('client_profile', '')
             match_found = data.get('match_found', False)
+            client_name = data.get('client_name', 'there')
+            chat_history = data.get('chat_history', '')
         else:
             property_info = input_data
             client_profile = ""
             match_found = True
+            client_name = "there"
+            chat_history = ""
 
         llm = ChatGoogleGenerativeAI(
             model=GENAI_MODEL,
@@ -385,39 +406,63 @@ def generate_client_message_tool(input_data: str) -> str:
 
         if match_found:
             message_prompt = f"""
-            Generate a natural, human-like text message for this client about a property match.
+            You are a HomeEasy virtual sales assistant. Generate an engaging text message following these EXACT guidelines from our SLA:
 
-            PROPERTY INFO:
+            PROPERTY MATCH DETAILS:
             {property_info}
 
-            CLIENT PROFILE:
+            CLIENT PROFILE & CHAT HISTORY:
             {client_profile}
+            {chat_history}
 
-            Requirements:
-            1. Sound like a real person, not AI
-            2. Keep it under 160 characters for SMS
-            3. Be specific about the property
-            4. Create urgency but not pushy
-            5. Include call to action
-            6. NO placeholder text like [insert link]
-            7. NO formal language - keep it casual and friendly
+            MESSAGE TONE & STYLE REQUIREMENTS:
+            - Use neutral, landlord-like, non-salesy tone
+            - Avoid overpromising. Never say "dream home" or "perfect match"
+            - Sound human and personal, not AI-generated
+            - Use Socratic framing when introducing price/availability
+            - Include specific location details and property highlights
+            - Create excitement with "I have a unit for you" approach
+
+                         MESSAGE STRUCTURE:
+             1. Personal greeting using client context
+             2. "I have a unit for you" or similar engaging opener
+             3. Specific property details: location, price, bed/bath
+             4. Mention move-in special and savings if applicable
+             5. Clear next step - ask if they want to see it
+             6. CRITICAL: Keep under 250 characters for SMS - be very concise
+
+            AVOID:
+            - "Dream home", "perfect match", overly optimistic phrases
+            - Formal language or corporate speak
+            - Commission mentions
+            - Availability promises without confirmation
+            - Generic property descriptions
+
+            EXAMPLE STYLE:
+            "Hi [Name]! I have a unit for you - 2BR/2BA in [Location] at $[price]/mo with [special]. [Key feature]. Want to check it out? [Maps link]"
 
             Generate ONLY the SMS message text, nothing else.
             """
         else:
             message_prompt = f"""
-            Generate a natural, human-like text message for this client when no perfect match was found.
+            Generate a helpful text message when no perfect match was found, following HomeEasy guidelines:
 
-            CLIENT PROFILE:
+            CLIENT CONTEXT:
             {client_profile}
+            {chat_history}
 
-            Requirements:
-            1. Sound like a real person, not AI
-            2. Keep it under 160 characters for SMS
-            3. Be helpful and positive
-            4. Suggest next steps
-            5. NO placeholder text
-            6. Keep it casual and friendly
+            TONE REQUIREMENTS:
+            - Neutral, professional, not salesy
+            - Acknowledge limited results honestly
+            - Invite feedback to refine search
+            - Keep conversation open for back-and-forth
+            - Under 160 characters
+
+            STRUCTURE:
+            1. Acknowledge search completion
+            2. Brief explanation of limited results
+            3. Ask for feedback/preferences to adjust
+            4. Keep thread open for continued search
 
             Generate ONLY the SMS message text, nothing else.
             """
@@ -427,6 +472,8 @@ def generate_client_message_tool(input_data: str) -> str:
         message = response.content.strip()
         message = re.sub(r'^["\']|["\']$', '', message)  # Remove quotes
         message = re.sub(r'\[.*?\]', '', message)  # Remove any placeholder brackets
+        message = re.sub(r'Client Name', 'there', message)  # Replace placeholder names
+        message = re.sub(r'\[Name\]', 'there', message)  # Replace placeholder names
         
         return message
 
@@ -479,24 +526,34 @@ class MainPropertyAgent:
             
             # Gather all client data once
             requirements = get_client_requirements(client_id)
+            print(f"Requirements: {requirements}")
             chat_history = get_client_chat_history(client_id)
+            print(f"Chat History: {chat_history}")
             inventory = get_client_markdown_content(client_id)
-            previous_messages = get_previous_messages(client_id)
+            print(f"Inventory: {inventory}")
             client_info = get_client_basic_info(client_id)
-            
-            # Format previous messages
-            prev_msgs = "\n".join([f"{msg[1]}: {msg[0]}" for msg in previous_messages])
-            
+            print(f"Client Info: {client_info}")
+            # Extract client name from client_info
+            client_name = "there"  # Default
+            if "Name:" in client_info:
+                try:
+                    name_part = client_info.split("Name: ")[1].split(",")[0].strip()
+                    if name_part and name_part != "None":
+                        client_name = name_part.split()[0]  # First name only
+                except:
+                    pass
+
             # Create the main prompt for the agent
             main_prompt = f"""
             You are a property matching expert. Your task is to process this client and return a final JSON response.
 
             CLIENT ID: {client_id}
+            CLIENT NAME: {client_name}
             
             CLIENT REQUIREMENTS:
             {requirements}
             
-            CLIENT CHAT HISTORY:
+            CLIENT CHAT HISTORY (Raw format from Follow Up Boss):
             {chat_history}
             
             CLIENT INFO:
@@ -504,24 +561,33 @@ class MainPropertyAgent:
             
             AVAILABLE INVENTORY:
             {inventory}
+
+            TOOL CALLING INSTRUCTIONS:
+            1. **analyze_client_profile**: Pass JSON with requirements, chat_history, and client_info
+            2. **find_inventory_match**: Pass JSON with requirements, inventory, and chat_history  
+            3. **generate_client_message**: Pass JSON with property_info, client_profile, match_found, client_name, and chat_history
+
+            CHAT HISTORY FORMAT NOTES:
+            The chat history contains messages in this format:
+            [timestamp] Client - Name: message text
+            [timestamp] Sales Rep - Name: message text
             
-            PREVIOUS MESSAGES SENT:
-            {prev_msgs}
+            Find the LATEST CLIENT MESSAGE to understand what they need a response to.
 
             Your task:
             1. First analyze the client profile using the analyze_client_profile tool
-            2. Then find matching inventory using the find_inventory_match tool  
-            3. Finally generate a human-like message using the generate_client_message tool
+            2. Then find the SINGLE BEST UNIT using the find_inventory_match tool (it will calculate net effective rent from move-in specials)
+            3. Finally generate an engaging "I have a unit for you" message using the generate_client_message tool
 
             Based on your analysis, determine:
             - If a good property match was found (true/false)
             - Create a summary of the client
-            - Generate a natural SMS message for the client
+            - Generate an engaging SMS message following HomeEasy guidelines
 
             After using the tools, provide your final response as JSON in this exact format:
             {{
-                "summary": "Brief client profile summary",
-                "message": "Human-like SMS message for client",
+                "summary": "Brief client profile summary with key details",
+                "message": "Engaging SMS message ready to send",
                 "inventory_found": true/false
             }}
             """
