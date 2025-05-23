@@ -301,6 +301,70 @@ def analyze_client_profile_tool(input_data: str) -> str:
     except Exception as e:
         return f"Error analyzing client profile: {str(e)}"
 
+def sanity_check_requirements_tool(input_data: str) -> str:
+    """Tool function to validate client requirements against market data."""
+    try:
+        # Parse input if it's JSON
+        if input_data.startswith('{'):
+            data = json.loads(input_data)
+            requirements = data.get('requirements', '')
+            inventory = data.get('inventory', '')
+        else:
+            requirements = input_data
+            inventory = ""
+
+        llm = ChatGoogleGenerativeAI(
+            model=GENAI_MODEL,
+            google_api_key=GOOGLE_API_KEY,
+            temperature=0.3  # Lower temperature for more consistent analysis
+        )
+
+        sanity_check_prompt = f"""
+        You are a real estate market expert. Analyze the client's requirements against the available inventory to validate their expectations.
+
+        CLIENT REQUIREMENTS:
+        {requirements}
+
+        AVAILABLE INVENTORY:
+        {inventory}
+
+        YOUR TASK:
+        1. Analyze the client's budget against the average rent in their preferred neighborhoods
+        2. Compare their requirements (bed/bath, sqft, amenities) with what's typically available
+        3. Identify any potential mismatches or unrealistic expectations
+        4. Provide specific recommendations for adjusting requirements if needed
+
+        RESPONSE FORMAT:
+        Return a JSON object with this exact structure:
+        {{
+            "budget_analysis": {{
+                "client_budget": "Client's budget range",
+                "market_average": "Average rent in preferred areas",
+                "budget_realistic": true/false,
+                "recommendation": "Specific budget adjustment if needed"
+            }},
+            "neighborhood_analysis": {{
+                "preferred_areas": "List of preferred neighborhoods",
+                "availability": "Availability in these areas",
+                "recommendation": "Alternative areas to consider"
+            }},
+            "requirements_analysis": {{
+                "bed_bath_match": "Analysis of bed/bath requirements",
+                "amenities_match": "Analysis of amenity requirements",
+                "recommendation": "Suggested requirement adjustments"
+            }},
+            "overall_assessment": "Brief summary of findings and recommendations"
+        }}
+
+        Keep the analysis factual and data-driven based on the inventory provided.
+        """
+
+        response = llm.invoke(sanity_check_prompt)
+        return response.content
+
+    except Exception as e:
+        return f"Error performing sanity check: {str(e)}"
+
 def find_inventory_match_tool(input_data: str) -> str:
     """Tool function to find the single best matching inventory unit."""
     try:
@@ -498,6 +562,11 @@ class MainPropertyAgent:
                 description="Analyze client profile including financial status, demographics, and approval likelihood. Input should be client requirements, chat history, and basic info."
             ),
             Tool(
+                name="sanity_check_requirements",
+                func=sanity_check_requirements_tool,
+                description="Validate client requirements against market data and inventory. Input should include requirements and inventory data."
+            ),
+            Tool(
                 name="find_inventory_match",
                 func=find_inventory_match_tool,
                 description="Find matching properties from inventory based on client requirements. Input should include requirements, inventory data, and previous messages."
@@ -564,8 +633,9 @@ class MainPropertyAgent:
 
             TOOL CALLING INSTRUCTIONS:
             1. **analyze_client_profile**: Pass JSON with requirements, chat_history, and client_info
-            2. **find_inventory_match**: Pass JSON with requirements, inventory, and chat_history  
-            3. **generate_client_message**: Pass JSON with property_info, client_profile, match_found, client_name, and chat_history
+            2. **sanity_check_requirements**: Pass JSON with requirements and inventory to validate expectations
+            3. **find_inventory_match**: Pass JSON with requirements, inventory, and chat_history  
+            4. **generate_client_message**: Pass JSON with property_info, client_profile, match_found, client_name, and chat_history
 
             CHAT HISTORY FORMAT NOTES:
             The chat history contains messages in this format:
@@ -576,19 +646,26 @@ class MainPropertyAgent:
 
             Your task:
             1. First analyze the client profile using the analyze_client_profile tool
-            2. Then find the SINGLE BEST UNIT using the find_inventory_match tool (it will calculate net effective rent from move-in specials)
-            3. Finally generate an engaging "I have a unit for you" message using the generate_client_message tool
+            2. Then validate their requirements using the sanity_check_requirements tool
+            3. Find the SINGLE BEST UNIT using the find_inventory_match tool (it will calculate net effective rent from move-in specials)
+            4. Finally generate an engaging "I have a unit for you" message using the generate_client_message tool
 
             Based on your analysis, determine:
             - If a good property match was found (true/false)
             - Create a summary of the client
             - Generate an engaging SMS message following HomeEasy guidelines
+            - Include any important market insights from the sanity check
 
             After using the tools, provide your final response as JSON in this exact format:
             {{
                 "summary": "Brief client profile summary with key details",
                 "message": "Engaging SMS message ready to send",
-                "inventory_found": true/false
+                "inventory_found": true/false,
+                "market_insights": {{
+                    "budget_analysis": "Analysis of budget vs market",
+                    "neighborhood_analysis": "Analysis of preferred areas",
+                    "recommendations": "Suggested adjustments if needed"
+                }}
             }}
             """
             
@@ -622,7 +699,12 @@ class MainPropertyAgent:
             return {
                 "summary": f"Client {client_id} processed - see full analysis in logs",
                 "message": "Hi! Found some options for you. Let's chat about your housing needs!",
-                "inventory_found": inventory_found
+                "inventory_found": inventory_found,
+                "market_insights": {
+                    "budget_analysis": "Unable to analyze budget at this time",
+                    "neighborhood_analysis": "Unable to analyze neighborhoods at this time",
+                    "recommendations": "Please check the logs for detailed analysis"
+                }
             }
             
         except Exception as e:
@@ -630,7 +712,12 @@ class MainPropertyAgent:
             return {
                 "summary": f"Error processing client {client_id}: {str(e)}",
                 "message": "Hi! Let me look into some options for you and get back to you soon.",
-                "inventory_found": False
+                "inventory_found": False,
+                "market_insights": {
+                    "budget_analysis": "Error during analysis",
+                    "neighborhood_analysis": "Error during analysis",
+                    "recommendations": "Please try again later"
+                }
             }
 
 # Main function for external use
@@ -644,7 +731,12 @@ async def process_client(client_id: int) -> str:
         error_result = {
             "summary": f"Error processing client {client_id}: {str(e)}",
             "message": "Hi! Let me look into some options for you and get back to you soon.",
-            "inventory_found": False
+            "inventory_found": False,
+            "market_insights": {
+                "budget_analysis": "Error during analysis",
+                "neighborhood_analysis": "Error during analysis",
+                "recommendations": "Please try again later"
+            }
         }
         return json.dumps(error_result, indent=2)
 

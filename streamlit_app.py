@@ -188,7 +188,7 @@ if st.session_state.results and not st.session_state.processing:
     results = st.session_state.results
     
     # Create tabs for different views
-    tab1, tab2, tab3 = st.tabs(["🧠 Agent Thinking", "📱 Final Output", "📊 JSON Response"])
+    tab1, tab2, tab3, tab4 = st.tabs(["🧠 Agent Thinking", "📱 Final Output", "📊 JSON Response", "📈 Sanity Check Summary"])
     
     with tab1:
         st.markdown("### 🤖 Main Property Agent - Decision Making Process")
@@ -219,6 +219,8 @@ if st.session_state.results and not st.session_state.processing:
                 for i, action in enumerate(actions, 1):
                     if action == "analyze_client_profile":
                         st.success(f"{i}. 👤 Analyzed Client Profile")
+                    elif action == "sanity_check_requirements":
+                        st.success(f"{i}. 📊 Validated Market Requirements")
                     elif action == "find_inventory_match":
                         st.success(f"{i}. 🏢 Found Inventory Matches")
                     elif action == "generate_client_message":
@@ -292,6 +294,41 @@ if st.session_state.results and not st.session_state.processing:
             file_name=f"client_{client_id}_analysis.json",
             mime="application/json"
         )
+
+    with tab4:
+        st.markdown("### 📈 Sanity Check Summary")
+        
+        final_result = results.get('final_result', {})
+        market_insights = final_result.get('market_insights', {})
+        
+        # Budget Analysis
+        st.markdown("#### 💰 Budget Analysis")
+        budget_analysis = market_insights.get('budget_analysis', 'No budget analysis available')
+        st.info(budget_analysis)
+        
+        # Neighborhood Analysis
+        st.markdown("#### 🏘️ Neighborhood Analysis")
+        neighborhood_analysis = market_insights.get('neighborhood_analysis', 'No neighborhood analysis available')
+        st.info(neighborhood_analysis)
+        
+        # Recommendations
+        st.markdown("#### 💡 Recommendations")
+        recommendations = market_insights.get('recommendations', 'No recommendations available')
+        st.info(recommendations)
+        
+        # Visual indicators
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            budget_realistic = "budget_realistic" in str(market_insights).lower() and "true" in str(market_insights).lower()
+            st.metric("Budget Realistic", "✅ Yes" if budget_realistic else "⚠️ Needs Review")
+        
+        with col2:
+            has_recommendations = "recommendation" in str(market_insights).lower()
+            st.metric("Has Recommendations", "✅ Yes" if has_recommendations else "ℹ️ No Adjustments Needed")
+        
+        with col3:
+            has_alternatives = "alternative" in str(market_insights).lower()
+            st.metric("Alternative Areas", "✅ Available" if has_alternatives else "ℹ️ None Suggested")
 
 # Show example if no results
 if not st.session_state.results and not st.session_state.processing:
