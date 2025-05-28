@@ -235,7 +235,7 @@ def get_neighborhood_zip_codes(neighborhood: str) -> List[Dict[str, Any]]:
         ai_zip_codes = get_neighborhood_zip_codes_from_ai(neighborhood)
         
         if not ai_zip_codes:
-            raise ValueError(f"Could not determine ZIP codes for neighborhood: {neighborhood}")
+            return []
         
         session = get_db_connection()
         # Use the AI-provided ZIP codes in the query
@@ -272,14 +272,14 @@ def get_neighborhood_zip_codes(neighborhood: str) -> List[Dict[str, Any]]:
             }
             neighborhood_info.append(info)
         
-        if not neighborhood_info:
-            raise ValueError(f"No buildings found in ZIP codes {ai_zip_codes} for neighborhood: {neighborhood}")
-        
+        # Return empty list if no buildings found (don't raise error)
         return neighborhood_info
     
     except Exception as e:
-        print(f"Error fetching neighborhood information: {str(e)}")
-        raise
+        # Suppress specific "No buildings found" errors, but log other errors
+        if "No buildings found" not in str(e):
+            print(f"Error fetching neighborhood information: {str(e)}")
+        return []
     finally:
         try:
             if session:
@@ -330,7 +330,7 @@ def validate_neighborhood(neighborhood: str) -> Dict[str, Any]:
             },
             "buildings": neighborhood_info,
             "status": "✅" if neighborhood_info else "⚠️",
-            "message": f"Found {len(neighborhood_info)} buildings in ZIP codes {ai_zip_codes}" if neighborhood_info else f"No buildings found in ZIP codes {ai_zip_codes} for {neighborhood}"
+            "message": f"Found {len(neighborhood_info)} buildings in ZIP codes {ai_zip_codes}" if neighborhood_info else f"No buildings found in our database for {neighborhood}"
         }
     
     except Exception as e:
@@ -687,6 +687,133 @@ def print_results(result: Dict[str, Any]):
     else:
         print("Next: Review and adjust requirements")
 
+def save_sanity_check_note(client_id: int, sanity_note: str) -> bool:
+    """Save sanity check results to the sanity_check_note table."""
+    session = None
+    try:
+        session = get_db_connection()
+        
+        # Insert the sanity check note
+        query = text("""
+            INSERT INTO sanity_check_note (client_id, sanity_note, note_push, created_on)
+            VALUES (:client_id, :sanity_note, :note_push, CURRENT_TIMESTAMP)
+        """)
+        
+        session.execute(query, {
+            "client_id": client_id,
+            "sanity_note": sanity_note,
+            "note_push": True
+        })
+        session.commit()
+        
+        print(f"✅ Sanity check note saved for client {client_id}")
+        return True
+        
+    except Exception as e:
+        print(f"Error saving sanity check note: {str(e)}")
+        if session:
+            session.rollback()
+        return False
+    finally:
+        try:
+            if session:
+                session.close()
+        except Exception as close_err:
+            print(f"Warning: failed to close DB session: {close_err}")
+
+def format_sanity_check_for_note(result: Dict[str, Any]) -> str:
+    """Format the sanity check results into a readable note format."""
+    note_lines = []
+    note_lines.append("SANITY CHECK RESULTS")
+    note_lines.append("=" * 50)
+    note_lines.append("")
+    
+    # Requirements Validation
+    note_lines.append("REQUIREMENTS VALIDATION:")
+    note_lines.append("-" * 25)
+    for check in result.get('requirements_check', []):
+        note_lines.append(f"{check['status']} {check['field'].title()}: {check['value']} - {check['comment']}")
+    note_lines.append("")
+    
+    # Neighborhood Analysis
+    note_lines.append("NEIGHBORHOOD ANALYSIS:")
+    note_lines.append("-" * 20)
+    for analysis in result.get('neighborhood_analysis', []):
+        note_lines.append(f"\nNeighborhood: {analysis['neighborhood']}")
+        note_lines.append(f"ZIP Codes: {', '.join(analysis.get('zip_codes', []))}")
+        note_lines.append(f"Budget Compatibility: {analysis['budget_compatibility']}")
+        note_lines.append(f"Average Rent: {analysis['average_rent']}")
+        note_lines.append(f"Bed Configuration Availability: {analysis['bed_configuration_availability']}")
+        note_lines.append(f"Market Insights: {analysis['market_insights']}")
+        
+        # Add building listings if available
+        if 'buildings' in analysis and analysis['buildings']:
+            note_lines.append("\nAvailable Buildings:")
+            for building in analysis['buildings'][:5]:  # Limit to first 5 buildings
+                note_lines.append(f"  • {building['property_name']} - {building['property_address']}")
+                note_lines.append(f"    ZIP: {building['zip_code']}, Rent: {building['rent_range']}")
+    note_lines.append("")
+    
+    # Bed Configuration Analysis
+    note_lines.append("BED CONFIGURATION ANALYSIS:")
+    note_lines.append("-" * 28)
+    for analysis in result.get('bed_configuration_analysis', []):
+        note_lines.append(f"Bed Count: {analysis['bed_count']}")
+        note_lines.append(f"Commonality: {analysis['commonality']}")
+        note_lines.append(f"Typical Price Range: {analysis['typical_price_range']}")
+        note_lines.append(f"Availability: {analysis['availability']}")
+        note_lines.append(f"Recommendations: {analysis['recommendations']}")
+    note_lines.append("")
+    
+    # Summary
+    summary = result.get('summary', {})
+    if summary.get('concerns'):
+        note_lines.append("CONCERNS:")
+        note_lines.append("-" * 9)
+        for concern in summary['concerns']:
+            note_lines.append(f"⚠️ {concern}")
+        note_lines.append("")
+    
+    if summary.get('suggestions'):
+        note_lines.append("SUGGESTIONS:")
+        note_lines.append("-" * 12)
+        for suggestion in summary['suggestions']:
+            note_lines.append(f"💡 {suggestion}")
+        note_lines.append("")
+    
+    if summary.get('questions'):
+        note_lines.append("QUESTIONS TO ASK:")
+        note_lines.append("-" * 17)
+        for question in summary['questions']:
+            note_lines.append(f"❓ {question}")
+        note_lines.append("")
+    
+    # Quick Summary
+    note_lines.append("QUICK SUMMARY:")
+    note_lines.append("-" * 14)
+    
+    # Check overall status
+    budget_compatible = all(analysis['budget_compatibility'] == '✅' 
+                          for analysis in result.get('neighborhood_analysis', []))
+    bed_available = all(analysis['availability'] == 'Available' 
+                       for analysis in result.get('bed_configuration_analysis', []))
+    all_requirements_valid = all(check['status'] == '✅' 
+                               for check in result.get('requirements_check', []))
+    
+    status = "✅" if all([budget_compatible, bed_available, all_requirements_valid]) else "⚠️"
+    note_lines.append(f"{status} Overall Status: {'Ready to proceed' if status == '✅' else 'Needs adjustment'}")
+    
+    if not budget_compatible:
+        note_lines.append("⚠️ Budget may need adjustment in some neighborhoods")
+    if not bed_available:
+        note_lines.append("⚠️ Some bed configurations may be limited")
+    if not all_requirements_valid:
+        note_lines.append("⚠️ Some requirements need review")
+    
+    note_lines.append(f"Next: {'Proceed with property search' if status == '✅' else 'Review and adjust requirements'}")
+    
+    return "\n".join(note_lines)
+
 # Example usage
 if __name__ == "__main__":
     async def main():
@@ -701,9 +828,20 @@ if __name__ == "__main__":
             # Run analysis
             print(f"\nAnalyzing requirements for client {client_id}...")
             result = await check_requirements(client_id)
+            
             print(f"\nAnalysis Results for Client {client_id}:")
             print("=====================================")
             print_results(result)
+            
+            # Save to database
+            print(f"\nSaving sanity check note to database...")
+            sanity_note = format_sanity_check_for_note(result)
+            success = save_sanity_check_note(client_id, sanity_note)
+            
+            if success:
+                print("✅ Sanity check completed and saved successfully!")
+            else:
+                print("⚠️ Sanity check completed but failed to save to database.")
             
         except ValueError as e:
             print(f"Error: {str(e)}")
