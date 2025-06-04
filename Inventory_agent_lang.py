@@ -200,7 +200,7 @@ class InventoryAgent:
                     "special_offers": "[Any incentives or deals]",
                     "savings_details": "[Breakdown of cost savings from specials]"
                 }},
-                "message": "Hey [client_name], I found this great option for you! [property_name] at [address]. Map: http://www.google.com/maps/search/?api=1&query=[encoded_address]. Price range: $[price_range]. Showings require scheduling - what time works best for you?"
+                "message": "Ok good news [client_name], I found a great option at [property_name]  ([address]). You can enjoy write here the average calculated on savings [special_offers],  (only write this message if a special is found in [special_offers] and [savings_details]). Let me know when you’d like to schedule a showing!"
             }}
             
             IMPORTANT GUIDELINES:
@@ -233,12 +233,16 @@ class InventoryAgent:
             5. SPECIAL REQUIREMENTS (5%) - Parking, pets, amenities
             
             MESSAGE FORMAT REQUIREMENTS:
-            - Start with "Hey [client_name], I found this great option for you!"
-            - Include property name and full address
-            - Provide Google Maps link with properly URL-encoded address
-            - Show price range (e.g., "$1,750 - $7,497")
-            - End with "Showings require scheduling - what time works best for you?"
-            - Keep professional yet friendly tone
+            - Start with "Ok good news [client_name], I found a great option at"
+            - Include property name and only full address in parentheses
+            - Mention the special offer and savings (use the fields "special_offers" and "savings_details")
+            - If there is a special offer, compute the average dollar savings from the numeric values in [savings_details].  
+              (For example, if savings_details="With a 14-16 month lease, Mark could save between $499.75 and $607 per month", calculate the midpoint: round((499.75 + 607) / 2) → 553. Then round up or down to a nice number, e.g. $600.)  
+            - Instead of writing a range (“$499.75–$607”), say “averaging about $600 saved on a 16-month lease.”  
+            - Use a comma before “saving…” rather than an em-dash.  
+            - Do NOT include a Google Maps link or any net-effective‐rent calculation
+            - End with a friendly “Let me know when you’d like to schedule a showing!”
+            - Keep professional, friendly tone and concise message
             - Use actual data from selected property
             
             Focus on location proximity as the primary matching factor.
@@ -574,7 +578,7 @@ class InventoryAgent:
         """Format the complete JSON analysis result for Discord."""
         try:
             # Safely format JSON for Discord
-            json_str = json.dumps(analysis, indent=2)
+            json_str = json.dumps(analysis, indent=2, ensure_ascii=False)
             
             # Show complete thinking process sections instead of character counts
             thinking = analysis.get("thinking_process", {})
@@ -643,7 +647,7 @@ class InventoryAgent:
         complete_analysis_msg = self.format_complete_analysis_for_discord(analysis)
         
         # Format the complete JSON structure for Discord
-        complete_json = json.dumps(analysis, indent=2)
+        complete_json = json.dumps(analysis, indent=2, ensure_ascii=False)
         json_message = f"""📋 **COMPLETE JSON ANALYSIS RESULT:**
 ```json
 {complete_json[:1800]}{'...' if len(complete_json) > 1800 else ''}
@@ -985,7 +989,7 @@ class InventoryAgent:
                     print("-" * 40)
                     print(f"📨 {final_message}")
                 
-                return json.dumps(json_response, indent=2)
+                return json.dumps(json_response, indent=2, ensure_ascii=False)
                 
             except json.JSONDecodeError as e:
                 self.verbose_log(f"JSON parsing failed: {str(e)}", "ERROR")
@@ -1002,7 +1006,7 @@ class InventoryAgent:
                         simple_discord_msg = f"🏠 **Property Match Result**\n👤 Client ID: {client_id}\n📱 **Message:** {message}\n\n{self.get_verbose_logs_summary()}"
                         sendDiscordSanityCheckNoteAlert(simple_discord_msg, self.discord_channel_id)
                     
-                    return json.dumps({"message": message})
+                    return json.dumps({"message": message} , ensure_ascii=False)
                 else:
                     error_msg = "Unable to find suitable property match at this time."
                     self.verbose_log(f"No message found, using default: {error_msg}", "WARNING")
@@ -1011,7 +1015,7 @@ class InventoryAgent:
                         error_discord_msg = f"❌ **Property Match Error**\n👤 Client ID: {client_id}\n🚨 {error_msg}\n\n{self.get_verbose_logs_summary()}"
                         sendDiscordSanityCheckNoteAlert(error_discord_msg, self.discord_channel_id)
                     
-                    return json.dumps({"message": error_msg})
+                    return json.dumps({"message": error_msg} )
                     
         except Exception as e:
             self.verbose_log(f"Critical error in find_property_match: {str(e)}", "ERROR")
@@ -1078,7 +1082,9 @@ async def main(client_id: int = 689576, enable_discord: bool = True, verbose: bo
             silent_mode=silent_mode
         )
         result = await agent.find_property_match(client_id)
-        
+        response_dict = json.loads(result)
+        client_sms = response_dict.get("message", "")
+        print("HELLLOOOOOODWUODWHIAUBDA AHHHHHHHHHHHHHHHHHHHH", client_sms)
         if not silent_mode:
             print("\n📋 COMPLETE ANALYSIS RESULT:")
             print("-" * 40)
@@ -1093,7 +1099,7 @@ async def main(client_id: int = 689576, enable_discord: bool = True, verbose: bo
 
 if __name__ == "__main__":
     # Example usage with comprehensive Discord logging
-    client_id = 689576  # Replace with actual client ID
+    client_id = 716237  # Replace with actual client ID
     result = asyncio.run(main(
         client_id=client_id,  
         enable_discord=True, 
